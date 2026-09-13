@@ -149,7 +149,7 @@
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .fc-box {
             flex: 1;
@@ -171,12 +171,12 @@
             text-transform: uppercase;
         }
         .word-display {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             color: #0f172a;
         }
         .meaning-display {
-            font-size: 24px;
+            font-size: 22px;
             color: #475569;
             font-weight: 600;
         }
@@ -185,9 +185,9 @@
             background: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 50%;
-            width: 38px;
-            height: 38px;
-            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -209,13 +209,24 @@
         .correct { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
         .incorrect { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
 
+        /* ส่วนแสดงเฉลย */
+        .answer-reveal-box {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            min-height: 28px;
+            transition: all 0.2s ease;
+        }
+        .answer-reveal-box.show-correct { color: #16a34a; }
+        .answer-reveal-box.show-incorrect { color: #dc2626; }
+
         /* แผงควบคุมเสียง */
         .audio-controls {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 12px;
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -262,7 +273,7 @@
             height: 8px;
             background-color: #e2e8f0;
             border-radius: 4px;
-            margin-top: 20px;
+            margin-top: 15px;
             overflow: hidden;
         }
         .progress-bar { height: 100%; background-color: #2563eb; width: 0%; transition: width 0.3s ease; }
@@ -284,7 +295,7 @@
         </div>
 
         <div class="divider">หรือวางข้อความโดยตรง</div>
-        <textarea id="wordInput" placeholder="apple แอปเปิ้ล&#10;banana : กล้วย&#10;cat = แมว"></textarea>
+        <textarea id="wordInput" placeholder="apple แอปเปิ้ล&#10;banana : กล้วย&#10;Surrogacy การอุ้มบุญ / การตั้งครรภ์แทน"></textarea>
 
         <!-- โหมดการทำงาน -->
         <div class="section-title">1. เลือกโหมดการเรียนรู้</div>
@@ -333,6 +344,7 @@
         </div>
         
         <input type="text" id="userInput" class="typing-input" placeholder="พิมพ์คำตอบ..." autocomplete="off">
+        <div id="answerReveal" class="answer-reveal-box"></div>
         <button class="btn-primary" id="checkBtn" style="display:none; margin-top:10px;" onclick="checkFlashcardAnswer()">ตรวจคำตอบ (Enter)</button>
 
         <div class="audio-controls">
@@ -380,11 +392,12 @@
     let currentMode = 'practice';
     let fcDirection = 'en2th';
     let audioCtx = null;
+    let isProcessingFc = false;
 
     // สำหรับเกมจับคู่แบบแบ่งชุด
     let currentMatchSet = 0;
     let totalMatchSets = 0;
-    const SET_SIZE = 6; // เล่นชุดละ 6 คู่
+    const SET_SIZE = 6;
     let selectedCards = [];
     let matchedPairsCount = 0;
 
@@ -437,9 +450,20 @@
         return arr;
     }
 
-    // ฟังก์ชันทำความสะอาดข้อความเพื่อเปรียบเทียบคำให้ยืดหยุ่น (ไม่สนใจตัวพิมพ์เล็ก-ใหญ่ / เคาะซ้ำ)
     function cleanString(str) {
         return str.toLowerCase().replace(/\s+/g, ' ').trim();
+    }
+
+    // ฟังก์ชันตรวจสอบว่าสิ่งที่พิมพ์มา ตรงกับความหมายใดความหมายหนึ่งหรือไม่
+    function isMatchAnyMeaning(userInputStr, targetFullStr) {
+        const cleanedUser = cleanString(userInputStr);
+        if (!cleanedUser) return false;
+
+        // แยกคำตอบย่อยด้วย / , ;
+        const subAnswers = targetFullStr.split(/[/,;]/).map(s => cleanString(s));
+        
+        // ถ้าพิมพ์ตรงกับคำใดคำหนึ่ง หรือตรงกับคำตอบเต็มๆ ถือว่าถูกต้อง
+        return subAnswers.some(ans => ans === cleanedUser) || cleanString(targetFullStr) === cleanedUser;
     }
 
     function startApp() {
@@ -479,12 +503,16 @@
             return;
         }
 
+        isProcessingFc = false;
         const item = wordList[currentIndex];
         const inputField = document.getElementById('userInput');
         const checkBtn = document.getElementById('checkBtn');
+        const answerReveal = document.getElementById('answerReveal');
 
         inputField.value = '';
         inputField.className = 'typing-input';
+        answerReveal.innerText = '';
+        answerReveal.className = 'answer-reveal-box';
 
         if (currentMode === 'practice') {
             document.getElementById('targetWord').innerText = item.word;
@@ -508,7 +536,7 @@
         inputField.focus();
     }
 
-    // การตรวจสอบ Real-time สำหรับฝึกพิมพ์ปกติ
+    // ฝึกพิมพ์ปกติ Real-time
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const target = wordList[currentIndex].word;
@@ -533,22 +561,29 @@
     });
 
     function checkFlashcardAnswer() {
+        if (isProcessingFc) return;
+        
         const item = wordList[currentIndex];
         const val = document.getElementById('userInput').value;
         const inputField = document.getElementById('userInput');
+        const answerReveal = document.getElementById('answerReveal');
 
         let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
-        
-        // ตรวจคำตอบแบบตรงคำ ไม่จำเป็นต้องถูกต้องเป๊ะ 100% (ขอแค่ตรงคำหลัก)
-        if (cleanString(val) === cleanString(targetAnswer)) {
+        let isCorrect = isMatchAnyMeaning(val, targetAnswer);
+
+        isProcessingFc = true;
+
+        if (isCorrect) {
             inputField.className = 'typing-input correct';
+            answerReveal.innerText = `✓ ถูกต้อง! (${targetAnswer})`;
+            answerReveal.className = 'answer-reveal-box show-correct';
             speakWord(item.word);
-            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 800);
+            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1200);
         } else {
             inputField.className = 'typing-input incorrect';
-            alert(`❌ ยังไม่ถูกต้อง!\nเฉลย: ${targetAnswer}`);
-            currentIndex++;
-            showPracticeOrFlashcardWord();
+            answerReveal.innerText = `✕ เฉลย: ${targetAnswer}`;
+            answerReveal.className = 'answer-reveal-box show-incorrect';
+            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 2200);
         }
     }
 
@@ -605,7 +640,6 @@
                 c2.classList.add('matched');
                 matchedPairsCount++;
 
-                // เล่นชุดนี้ครบเรียบร้อยแล้ว
                 if (matchedPairsCount === totalItemsInSet) {
                     currentMatchSet++;
                     setTimeout(() => {
