@@ -51,15 +51,8 @@
             border-color: #3b82f6;
             background-color: #eff6ff;
         }
-        .file-drop-icon {
-            font-size: 28px;
-            color: #64748b;
-            margin-bottom: 6px;
-        }
-        .file-drop-text {
-            color: #475569;
-            font-size: 13px;
-        }
+        .file-drop-icon { font-size: 28px; color: #64748b; margin-bottom: 6px; }
+        .file-drop-text { color: #475569; font-size: 13px; }
         .divider {
             text-align: center;
             margin: 15px 0;
@@ -146,42 +139,66 @@
 
         .view-section { display: none; text-align: center; }
 
-        .word-container {
+        /* แฟลชการ์ด layout ด้านซ้าย อังกฤษ / ด้านขวา ไทย */
+        .flashcard-display-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 6px;
+            gap: 15px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .fc-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .fc-divider-line {
+            width: 2px;
+            height: 60px;
+            background-color: #cbd5e1;
+        }
+        .fc-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
         }
         .word-display {
-            font-size: 38px;
+            font-size: 28px;
             font-weight: 700;
             color: #0f172a;
         }
+        .meaning-display {
+            font-size: 24px;
+            color: #475569;
+            font-weight: 600;
+        }
+        
         .btn-speaker {
-            background: #f1f5f9;
+            background: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            font-size: 20px;
+            width: 38px;
+            height: 38px;
+            font-size: 18px;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
+            margin-top: 6px;
             transition: all 0.2s;
         }
         .btn-speaker:hover { background-color: #e2e8f0; transform: scale(1.05); }
 
-        .meaning-display {
-            font-size: 20px;
-            color: #475569;
-            margin-bottom: 20px;
-            min-height: 30px;
-        }
-
         input[type="text"].typing-input {
-            font-size: 24px;
+            font-size: 22px;
             padding: 10px;
             width: 85%;
             text-align: center;
@@ -274,15 +291,15 @@
         <div class="options-grid">
             <label><input type="radio" name="appMode" value="practice" checked onclick="toggleFlashcardOpts(false)"> ✍️ ฝึกพิมพ์ทั่วไป</label>
             <label><input type="radio" name="appMode" value="flashcard" onclick="toggleFlashcardOpts(true)"> 🎴 แฟลชการ์ด</label>
-            <label><input type="radio" name="appMode" value="matching" onclick="toggleFlashcardOpts(false)"> 🧩 เกมจับคู่</label>
+            <label><input type="radio" name="appMode" value="matching" onclick="toggleFlashcardOpts(false)"> 🧩 เกมจับคู่ (แบบชุด)</label>
         </div>
 
         <!-- ตัวเลือกเพิ่มเติมของแฟลชการ์ด -->
         <div id="flashcardOptions" style="display: none;">
-            <div class="section-title">รูปแบบแฟลชการ์ด</div>
+            <div class="section-title">รูปแบบการทดสอบแฟลชการ์ด</div>
             <div class="options-grid">
-                <label><input type="radio" name="fcDirection" value="en2th" checked> 🇬🇧 แสดงอังกฤษ ➔ พิมพ์ไทย</label>
-                <label><input type="radio" name="fcDirection" value="th2en"> 🇹🇭 แสดงไทย ➔ พิมพ์อังกฤษ</label>
+                <label><input type="radio" name="fcDirection" value="en2th" checked> 🇬🇧 ซ่อนคำแปลไทย (พิมพ์ทายคำแปล)</label>
+                <label><input type="radio" name="fcDirection" value="th2en"> 🇹🇭 ซ่อนคำอังกฤษ (พิมพ์ทายคำอังกฤษ)</label>
             </div>
         </div>
 
@@ -298,11 +315,22 @@
 
     <!-- โหมด 1: ฝึกพิมพ์ทั่วไป & โหมด 2: แฟลชการ์ด -->
     <div id="practice-section" class="view-section">
-        <div class="word-container">
-            <div class="word-display" id="targetWord">---</div>
-            <button class="btn-speaker" id="speakerBtn" onclick="replayAudio()" title="ฟังเสียง">🔊</button>
+        <div class="flashcard-display-container">
+            <!-- ด้านซ้าย: ภาษาอังกฤษ -->
+            <div class="fc-box">
+                <div class="fc-label">English</div>
+                <div class="word-display" id="targetWord">---</div>
+                <button class="btn-speaker" id="speakerBtn" onclick="replayAudio()" title="ฟังเสียง">🔊</button>
+            </div>
+            
+            <div class="fc-divider-line"></div>
+            
+            <!-- ด้านขวา: ภาษาไทย -->
+            <div class="fc-box">
+                <div class="fc-label">Thai</div>
+                <div class="meaning-display" id="targetMeaning">---</div>
+            </div>
         </div>
-        <div class="meaning-display" id="targetMeaning">---</div>
         
         <input type="text" id="userInput" class="typing-input" placeholder="พิมพ์คำตอบ..." autocomplete="off">
         <button class="btn-primary" id="checkBtn" style="display:none; margin-top:10px;" onclick="checkFlashcardAnswer()">ตรวจคำตอบ (Enter)</button>
@@ -328,6 +356,7 @@
     <!-- โหมด 3: เกมจับคู่ -->
     <div id="matching-section" class="view-section">
         <h2>🧩 เกมจับคู่คำศัพท์</h2>
+        <div class="score-info" id="setInfoText" style="font-weight:600; color:#2563eb; font-size:15px;">ชุดที่ 1 / 1</div>
         <div class="matching-grid" id="matchingGrid"></div>
 
         <div class="audio-controls">
@@ -351,6 +380,11 @@
     let currentMode = 'practice';
     let fcDirection = 'en2th';
     let audioCtx = null;
+
+    // สำหรับเกมจับคู่แบบแบ่งชุด
+    let currentMatchSet = 0;
+    let totalMatchSets = 0;
+    const SET_SIZE = 6; // เล่นชุดละ 6 คู่
     let selectedCards = [];
     let matchedPairsCount = 0;
 
@@ -403,6 +437,11 @@
         return arr;
     }
 
+    // ฟังก์ชันทำความสะอาดข้อความเพื่อเปรียบเทียบคำให้ยืดหยุ่น (ไม่สนใจตัวพิมพ์เล็ก-ใหญ่ / เคาะซ้ำ)
+    function cleanString(str) {
+        return str.toLowerCase().replace(/\s+/g, ' ').trim();
+    }
+
     function startApp() {
         const rawText = document.getElementById('wordInput').value;
         wordList = parseRawText(rawText);
@@ -422,7 +461,9 @@
 
         if (currentMode === 'matching') {
             document.getElementById('matching-section').style.display = 'block';
-            initMatchingGame();
+            currentMatchSet = 0;
+            totalMatchSets = Math.ceil(wordList.length / SET_SIZE);
+            initMatchingSet();
         } else {
             document.getElementById('practice-section').style.display = 'block';
             currentIndex = 0;
@@ -441,7 +482,6 @@
         const item = wordList[currentIndex];
         const inputField = document.getElementById('userInput');
         const checkBtn = document.getElementById('checkBtn');
-        const speakerBtn = document.getElementById('speakerBtn');
 
         inputField.value = '';
         inputField.className = 'typing-input';
@@ -449,18 +489,15 @@
         if (currentMode === 'practice') {
             document.getElementById('targetWord').innerText = item.word;
             document.getElementById('targetMeaning').innerText = item.meaning;
-            speakerBtn.style.display = 'inline-flex';
             checkBtn.style.display = 'none';
         } else if (currentMode === 'flashcard') {
             if (fcDirection === 'en2th') {
                 document.getElementById('targetWord').innerText = item.word;
-                document.getElementById('targetMeaning').innerText = '? (แปลว่าอะไร)';
-                speakerBtn.style.display = 'inline-flex';
+                document.getElementById('targetMeaning').innerText = '???';
                 speakWord(item.word);
             } else {
-                document.getElementById('targetWord').innerText = item.meaning;
-                document.getElementById('targetMeaning').innerText = '? (พิมพ์เป็นภาษาอังกฤษ)';
-                speakerBtn.style.display = 'none';
+                document.getElementById('targetWord').innerText = '???';
+                document.getElementById('targetMeaning').innerText = item.meaning;
             }
             checkBtn.style.display = 'block';
         }
@@ -477,11 +514,11 @@
         const target = wordList[currentIndex].word;
         const val = e.target.value;
 
-        if (val.trim().toLowerCase() === target.toLowerCase()) {
+        if (cleanString(val) === cleanString(target)) {
             this.className = 'typing-input correct';
             speakWord(target);
             setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 700);
-        } else if (target.toLowerCase().startsWith(val.toLowerCase())) {
+        } else if (cleanString(target).startsWith(cleanString(val))) {
             this.className = 'typing-input';
         } else {
             this.className = 'typing-input incorrect';
@@ -497,31 +534,37 @@
 
     function checkFlashcardAnswer() {
         const item = wordList[currentIndex];
-        const val = document.getElementById('userInput').value.trim().toLowerCase();
+        const val = document.getElementById('userInput').value;
         const inputField = document.getElementById('userInput');
 
-        let targetAnswer = (fcDirection === 'en2th') ? item.meaning.toLowerCase() : item.word.toLowerCase();
+        let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
         
-        if (val === targetAnswer) {
+        // ตรวจคำตอบแบบตรงคำ ไม่จำเป็นต้องถูกต้องเป๊ะ 100% (ขอแค่ตรงคำหลัก)
+        if (cleanString(val) === cleanString(targetAnswer)) {
             inputField.className = 'typing-input correct';
             speakWord(item.word);
             setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 800);
         } else {
             inputField.className = 'typing-input incorrect';
-            alert(`❌ ยังไม่ถูกต้อง!\nเฉลย: ${fcDirection === 'en2th' ? item.meaning : item.word}`);
+            alert(`❌ ยังไม่ถูกต้อง!\nเฉลย: ${targetAnswer}`);
             currentIndex++;
             showPracticeOrFlashcardWord();
         }
     }
 
-    // --- โหมดเกมจับคู่ ---
-    function initMatchingGame() {
+    // --- โหมดเกมจับคู่ (เล่นเป็นชุดจนครบทุกคำ) ---
+    function initMatchingSet() {
         const grid = document.getElementById('matchingGrid');
         grid.innerHTML = '';
         selectedCards = [];
         matchedPairsCount = 0;
 
-        const gameItems = wordList.slice(0, 6);
+        document.getElementById('setInfoText').innerText = `ชุดที่ ${currentMatchSet + 1} / ${totalMatchSets}`;
+
+        const startIdx = currentMatchSet * SET_SIZE;
+        const endIdx = Math.min(startIdx + SET_SIZE, wordList.length);
+        const gameItems = wordList.slice(startIdx, endIdx);
+
         let cardsData = [];
 
         gameItems.forEach((item, index) => {
@@ -539,12 +582,12 @@
             card.dataset.type = data.type;
             card.dataset.english = data.englishWord;
 
-            card.onclick = () => selectCard(card);
+            card.onclick = () => selectCard(card, gameItems.length);
             grid.appendChild(card);
         });
     }
 
-    function selectCard(card) {
+    function selectCard(card, totalItemsInSet) {
         if (card.classList.contains('selected') || card.classList.contains('matched')) return;
 
         if (card.dataset.type === 'en') {
@@ -562,12 +605,18 @@
                 c2.classList.add('matched');
                 matchedPairsCount++;
 
-                const maxPairs = Math.min(wordList.length, 6);
-                if (matchedPairsCount === maxPairs) {
+                // เล่นชุดนี้ครบเรียบร้อยแล้ว
+                if (matchedPairsCount === totalItemsInSet) {
+                    currentMatchSet++;
                     setTimeout(() => {
-                        alert('🎉 ยินดีด้วย! จับคู่ครบทั้งหมดเรียบร้อยแล้ว');
-                        resetApp();
-                    }, 500);
+                        if (currentMatchSet < totalMatchSets) {
+                            alert(`✨ ผ่านชุดที่ ${currentMatchSet} แล้ว! ไปเล่นชุดถัดไปกันเลย`);
+                            initMatchingSet();
+                        } else {
+                            alert('🎉 ยินดีด้วย! คุณจับคู่ครบทุกคำศัพท์เรียบร้อยแล้ว');
+                            resetApp();
+                        }
+                    }, 400);
                 }
             } else {
                 setTimeout(() => {
