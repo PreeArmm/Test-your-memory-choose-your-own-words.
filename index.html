@@ -211,6 +211,7 @@
         .correct { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
         .incorrect { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
 
+        /* ส่วนแสดงเฉลย */
         .answer-reveal-box {
             margin-top: 10px;
             font-size: 16px;
@@ -352,7 +353,7 @@
             </div>
         </div>
         
-        <input type="text" id="userInput" class="typing-input" placeholder="พิมพ์ตามที่นี่..." autocomplete="off">
+        <input type="text" id="userInput" class="typing-input" placeholder="พิมพ์คำตอบ..." autocomplete="off">
         <div id="answerReveal" class="answer-reveal-box"></div>
         <button class="btn-primary" id="checkBtn" style="display:none; margin-top:10px;" onclick="checkFlashcardAnswer()">ตรวจคำตอบ (Enter)</button>
 
@@ -400,11 +401,11 @@
     let currentIndex = 0;
     let currentMode = 'practice';
     let fcDirection = 'en2th';
-    let practiceLang = 'en'; // en, th, both
+    let practiceLang = 'en'; 
     let audioCtx = null;
     let isProcessingFc = false;
 
-    // สำหรับเกมจับคู่
+    // เกมจับคู่
     let currentMatchSet = 0;
     let totalMatchSets = 0;
     const SET_SIZE = 6;
@@ -465,7 +466,8 @@
         return str.toLowerCase().replace(/\s+/g, ' ').trim();
     }
 
-    function isMatchAnyMeaning(userInputStr, targetFullStr) {
+    // ตรวจสอบความถูกต้องโดยรองรับตัวแบ่ง / , ;
+    function checkFlexibleAnswer(userInputStr, targetFullStr) {
         const cleanedUser = cleanString(userInputStr);
         if (!cleanedUser) return false;
         const subAnswers = targetFullStr.split(/[/,;]/).map(s => cleanString(s));
@@ -523,8 +525,6 @@
 
         if (currentMode === 'practice') {
             checkBtn.style.display = 'none';
-            
-            // แสดงผลทั้งสองภาษาตลอดเวลาในโหมดฝึกพิมพ์ตาม
             document.getElementById('targetWord').innerText = item.word;
             document.getElementById('targetMeaning').innerText = item.meaning;
 
@@ -533,7 +533,7 @@
             } else if (practiceLang === 'th') {
                 inputField.placeholder = `พิมพ์ตามภาษาไทย (${item.meaning})`;
             } else {
-                inputField.placeholder = `พิมพ์อังกฤษแล้วตามด้วยไทย (เช่น ${item.word} ${item.meaning.split(/[/,;]/)[0]})`;
+                inputField.placeholder = `พิมพ์อังกฤษแล้วตามด้วยไทย (${item.word} ${item.meaning.split(/[/,;]/)[0]})`;
             }
             speakWord(item.word);
 
@@ -541,12 +541,12 @@
             if (fcDirection === 'en2th') {
                 document.getElementById('targetWord').innerText = item.word;
                 document.getElementById('targetMeaning').innerText = '???';
-                inputField.placeholder = "พิมพ์คำตอบภาษาไทย...";
+                inputField.placeholder = "พิมพ์ทายคำแปลภาษาไทย...";
                 speakWord(item.word);
             } else {
                 document.getElementById('targetWord').innerText = '???';
                 document.getElementById('targetMeaning').innerText = item.meaning;
-                inputField.placeholder = "พิมพ์คำตอบภาษาอังกฤษ...";
+                inputField.placeholder = "พิมพ์ทายคำศัพท์ภาษาอังกฤษ...";
             }
             checkBtn.style.display = 'block';
         }
@@ -557,14 +557,13 @@
         inputField.focus();
     }
 
-    // ฝึกพิมพ์ตาม Real-time
+    // โหมดฝึกพิมพ์ตาม (Real-time)
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
         const val = e.target.value;
 
         if (practiceLang === 'en') {
-            // 1. พิมพ์ตามภาษาอังกฤษ
             const target = item.word;
             if (cleanString(val) === cleanString(target)) {
                 this.className = 'typing-input correct';
@@ -576,8 +575,7 @@
                 this.className = 'typing-input incorrect';
             }
         } else if (practiceLang === 'th') {
-            // 2. พิมพ์ตามภาษาไทย (ตรวจยืดหยุ่น ยอมรับทุกคำย่อย)
-            if (isMatchAnyMeaning(val, item.meaning)) {
+            if (checkFlexibleAnswer(val, item.meaning)) {
                 this.className = 'typing-input correct';
                 speakWord(item.word);
                 setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
@@ -591,23 +589,18 @@
                 }
             }
         } else if (practiceLang === 'both') {
-            // 3. พิมพ์ตามทั้งสองภาษา (อังกฤษ + ภาษาไทย)
             const cleanVal = cleanString(val);
             const cleanEn = cleanString(item.word);
 
             if (cleanVal.startsWith(cleanEn)) {
                 const tailInput = cleanVal.slice(cleanEn.length).trim();
-                
                 if (tailInput === '') {
-                    // พิมพ์อังกฤษครบแล้ว
                     this.className = 'typing-input';
-                } else if (isMatchAnyMeaning(tailInput, item.meaning)) {
-                    // พิมพ์ไทยถูกต้องต่อท้าย
+                } else if (checkFlexibleAnswer(tailInput, item.meaning)) {
                     this.className = 'typing-input correct';
                     speakWord(item.word);
                     setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
                 } else {
-                    // เช็คว่าภาษาไทยเริ่มพิมพ์ถูกไหม
                     const subAnswers = item.meaning.split(/[/,;]/).map(s => cleanString(s));
                     const isPartialMatch = subAnswers.some(ans => ans.startsWith(tailInput));
                     if (isPartialMatch) {
@@ -624,13 +617,14 @@
         }
     });
 
-    // Enter Key สำหรับแฟลชการ์ด
+    // กด Enter ตรวจคำตอบแฟลชการ์ด
     document.getElementById('userInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && currentMode === 'flashcard') {
             checkFlashcardAnswer();
         }
     });
 
+    // ฟังก์ชันตรวจคำตอบของโหมดแฟลชการ์ด (แก้ไขแล้ว)
     function checkFlashcardAnswer() {
         if (isProcessingFc) return;
         
@@ -640,21 +634,30 @@
         const answerReveal = document.getElementById('answerReveal');
 
         let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
-        let isCorrect = (fcDirection === 'en2th') ? isMatchAnyMeaning(val, targetAnswer) : (cleanString(val) === cleanString(targetAnswer));
+        
+        // ตรวจคำตอบ (ถ้าตอบทายคำแปลไทย จะใช้ระบบแยกย่อย / , ;)
+        let isCorrect = (fcDirection === 'en2th') ? checkFlexibleAnswer(val, targetAnswer) : (cleanString(val) === cleanString(targetAnswer));
 
         isProcessingFc = true;
+
+        // แสดงคำเฉลยบนการ์ดด้วย
+        if (fcDirection === 'en2th') {
+            document.getElementById('targetMeaning').innerText = item.meaning;
+        } else {
+            document.getElementById('targetWord').innerText = item.word;
+        }
 
         if (isCorrect) {
             inputField.className = 'typing-input correct';
             answerReveal.innerText = `✓ ถูกต้อง! (${targetAnswer})`;
             answerReveal.className = 'answer-reveal-box show-correct';
             speakWord(item.word);
-            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1200);
+            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1400);
         } else {
             inputField.className = 'typing-input incorrect';
             answerReveal.innerText = `✕ เฉลย: ${targetAnswer}`;
             answerReveal.className = 'answer-reveal-box show-incorrect';
-            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 2200);
+            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 2400);
         }
     }
 
