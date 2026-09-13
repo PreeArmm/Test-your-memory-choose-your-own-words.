@@ -142,7 +142,6 @@
 
         .view-section { display: none; text-align: center; }
 
-        /* การจัดวางกล่องข้อความภาษาอังกฤษ/ไทย */
         .flashcard-display-container {
             display: flex;
             align-items: center;
@@ -201,9 +200,9 @@
         .btn-speaker:hover { background-color: #e2e8f0; transform: scale(1.05); }
 
         input[type="text"].typing-input {
-            font-size: 22px;
+            font-size: 20px;
             padding: 10px;
-            width: 85%;
+            width: 90%;
             text-align: center;
             border: 2px solid #94a3b8;
             border-radius: 10px;
@@ -212,7 +211,6 @@
         .correct { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
         .incorrect { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
 
-        /* ส่วนแสดงเฉลย */
         .answer-reveal-box {
             margin-top: 10px;
             font-size: 16px;
@@ -223,7 +221,6 @@
         .answer-reveal-box.show-correct { color: #16a34a; }
         .answer-reveal-box.show-incorrect { color: #dc2626; }
 
-        /* แผงควบคุมเสียง */
         .audio-controls {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -244,7 +241,6 @@
         }
         .control-group input[type="range"] { width: 90px; cursor: pointer; }
 
-        /* เกมจับคู่ */
         .matching-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -303,18 +299,18 @@
         <!-- โหมดการทำงาน -->
         <div class="section-title">1. เลือกโหมดการเรียนรู้</div>
         <div class="options-grid">
-            <label><input type="radio" name="appMode" value="practice" checked onclick="updateSubOptions('practice')"> ✍️ ฝึกพิมพ์ทั่วไป</label>
-            <label><input type="radio" name="appMode" value="flashcard" onclick="updateSubOptions('flashcard')"> 🎴 แฟลชการ์ด</label>
-            <label><input type="radio" name="appMode" value="matching" onclick="updateSubOptions('matching')"> 🧩 เกมจับคู่ (แบบชุด)</label>
+            <label><input type="radio" name="appMode" value="practice" checked onclick="updateSubOptions('practice')"> ✍️ ฝึกพิมพ์ตาม (Typing)</label>
+            <label><input type="radio" name="appMode" value="flashcard" onclick="updateSubOptions('flashcard')"> 🎴 แฟลชการ์ด (Flashcards)</label>
+            <label><input type="radio" name="appMode" value="matching" onclick="updateSubOptions('matching')"> 🧩 เกมจับคู่ (Matching)</label>
         </div>
 
-        <!-- ตัวเลือกภาษาสำหรับฝึกพิมพ์ทั่วไป -->
+        <!-- ตัวเลือกภาษาสำหรับฝึกพิมพ์ตาม -->
         <div id="practiceOptions">
-            <div class="section-title">ภาษาที่ต้องการพิมพ์ (โหมดฝึกพิมพ์)</div>
+            <div class="section-title">ส่วนที่ต้องการฝึกพิมพ์ตาม</div>
             <div class="options-grid three-cols">
-                <label><input type="radio" name="practiceLang" value="en" checked> 🇬🇧 พิมพ์อังกฤษ</label>
-                <label><input type="radio" name="practiceLang" value="th"> 🇹🇭 พิมพ์ไทย</label>
-                <label><input type="radio" name="practiceLang" value="both"> 🔀 ทั้งสอง (สุ่ม)</label>
+                <label><input type="radio" name="practiceLang" value="en" checked> 🇬🇧 พิมพ์ตามอังกฤษ</label>
+                <label><input type="radio" name="practiceLang" value="th"> 🇹🇭 พิมพ์ตามไทย</label>
+                <label><input type="radio" name="practiceLang" value="both"> 🔀 พิมพ์ตามทั้งสองภาษา</label>
             </div>
         </div>
 
@@ -356,7 +352,7 @@
             </div>
         </div>
         
-        <input type="text" id="userInput" class="typing-input" placeholder="พิมพ์คำตอบ..." autocomplete="off">
+        <input type="text" id="userInput" class="typing-input" placeholder="พิมพ์ตามที่นี่..." autocomplete="off">
         <div id="answerReveal" class="answer-reveal-box"></div>
         <button class="btn-primary" id="checkBtn" style="display:none; margin-top:10px;" onclick="checkFlashcardAnswer()">ตรวจคำตอบ (Enter)</button>
 
@@ -405,11 +401,10 @@
     let currentMode = 'practice';
     let fcDirection = 'en2th';
     let practiceLang = 'en'; // en, th, both
-    let currentPracticeTarget = 'en'; // เก็บเป้าหมายของคำปัจจุบันกรณีสุ่มทั้งสองภาษา
     let audioCtx = null;
     let isProcessingFc = false;
 
-    // สำหรับเกมจับคู่แบบแบ่งชุด
+    // สำหรับเกมจับคู่
     let currentMatchSet = 0;
     let totalMatchSets = 0;
     const SET_SIZE = 6;
@@ -421,7 +416,7 @@
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, preventDefaults, false));
     function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
     ['dragenter', 'dragover'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.add('dragover'), false));
-    ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('dragleave'), false));
+    ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('dragover'), false));
     dropArea.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) readFile(e.dataTransfer.files[0]); });
     function handleFileSelect(e) { if (e.target.files.length) readFile(e.target.files[0]); }
     function readFile(file) {
@@ -528,40 +523,30 @@
 
         if (currentMode === 'practice') {
             checkBtn.style.display = 'none';
+            
+            // แสดงผลทั้งสองภาษาตลอดเวลาในโหมดฝึกพิมพ์ตาม
+            document.getElementById('targetWord').innerText = item.word;
+            document.getElementById('targetMeaning').innerText = item.meaning;
 
-            // คำนวณภาษาที่จะต้องพิมพ์
             if (practiceLang === 'en') {
-                currentPracticeTarget = 'en';
+                inputField.placeholder = `พิมพ์ตามภาษาอังกฤษ (${item.word})`;
             } else if (practiceLang === 'th') {
-                currentPracticeTarget = 'th';
+                inputField.placeholder = `พิมพ์ตามภาษาไทย (${item.meaning})`;
             } else {
-                currentPracticeTarget = Math.random() < 0.5 ? 'en' : 'th';
+                inputField.placeholder = `พิมพ์อังกฤษแล้วตามด้วยไทย (เช่น ${item.word} ${item.meaning.split(/[/,;]/)[0]})`;
             }
-
-            if (currentPracticeTarget === 'en') {
-                // พิมพ์อังกฤษ (แสดงคำไทย ให้พิมพ์อังกฤษ)
-                document.getElementById('targetWord').innerText = '???';
-                document.getElementById('targetMeaning').innerText = item.meaning;
-                inputField.placeholder = "พิมพ์คำศัพท์อังกฤษ...";
-                speakWord(item.word);
-            } else {
-                // พิมพ์ไทย (แสดงคำอังกฤษ ให้พิมพ์ไทย)
-                document.getElementById('targetWord').innerText = item.word;
-                document.getElementById('targetMeaning').innerText = '???';
-                inputField.placeholder = "พิมพ์คำแปลภาษาไทย...";
-                speakWord(item.word);
-            }
+            speakWord(item.word);
 
         } else if (currentMode === 'flashcard') {
             if (fcDirection === 'en2th') {
                 document.getElementById('targetWord').innerText = item.word;
                 document.getElementById('targetMeaning').innerText = '???';
-                inputField.placeholder = "พิมพ์คำตอบ...";
+                inputField.placeholder = "พิมพ์คำตอบภาษาไทย...";
                 speakWord(item.word);
             } else {
                 document.getElementById('targetWord').innerText = '???';
                 document.getElementById('targetMeaning').innerText = item.meaning;
-                inputField.placeholder = "พิมพ์คำตอบ...";
+                inputField.placeholder = "พิมพ์คำตอบภาษาอังกฤษ...";
             }
             checkBtn.style.display = 'block';
         }
@@ -572,34 +557,31 @@
         inputField.focus();
     }
 
-    // ฝึกพิมพ์ปกติ Real-time (ปรับระบบพิมพ์ไทย/อังกฤษ)
+    // ฝึกพิมพ์ตาม Real-time
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
         const val = e.target.value;
 
-        if (currentPracticeTarget === 'en') {
-            // ฝึกพิมพ์อังกฤษ
+        if (practiceLang === 'en') {
+            // 1. พิมพ์ตามภาษาอังกฤษ
             const target = item.word;
             if (cleanString(val) === cleanString(target)) {
                 this.className = 'typing-input correct';
-                document.getElementById('targetWord').innerText = item.word;
                 speakWord(target);
-                setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 700);
+                setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
             } else if (cleanString(target).startsWith(cleanString(val))) {
                 this.className = 'typing-input';
             } else {
                 this.className = 'typing-input incorrect';
             }
-        } else {
-            // ฝึกพิมพ์ไทย (ตรวจยืดหยุ่น ยอมรับทุกคำย่อย)
+        } else if (practiceLang === 'th') {
+            // 2. พิมพ์ตามภาษาไทย (ตรวจยืดหยุ่น ยอมรับทุกคำย่อย)
             if (isMatchAnyMeaning(val, item.meaning)) {
                 this.className = 'typing-input correct';
-                document.getElementById('targetMeaning').innerText = item.meaning;
                 speakWord(item.word);
-                setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 700);
+                setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
             } else {
-                // ตรวจสอบเบื้องต้นถ้าระหว่างพิมพ์มีเค้าถูกต้อง
                 const subAnswers = item.meaning.split(/[/,;]/).map(s => cleanString(s));
                 const isPartialMatch = subAnswers.some(ans => ans.startsWith(cleanString(val)));
                 if (isPartialMatch || cleanString(val) === '') {
@@ -607,6 +589,37 @@
                 } else {
                     this.className = 'typing-input incorrect';
                 }
+            }
+        } else if (practiceLang === 'both') {
+            // 3. พิมพ์ตามทั้งสองภาษา (อังกฤษ + ภาษาไทย)
+            const cleanVal = cleanString(val);
+            const cleanEn = cleanString(item.word);
+
+            if (cleanVal.startsWith(cleanEn)) {
+                const tailInput = cleanVal.slice(cleanEn.length).trim();
+                
+                if (tailInput === '') {
+                    // พิมพ์อังกฤษครบแล้ว
+                    this.className = 'typing-input';
+                } else if (isMatchAnyMeaning(tailInput, item.meaning)) {
+                    // พิมพ์ไทยถูกต้องต่อท้าย
+                    this.className = 'typing-input correct';
+                    speakWord(item.word);
+                    setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
+                } else {
+                    // เช็คว่าภาษาไทยเริ่มพิมพ์ถูกไหม
+                    const subAnswers = item.meaning.split(/[/,;]/).map(s => cleanString(s));
+                    const isPartialMatch = subAnswers.some(ans => ans.startsWith(tailInput));
+                    if (isPartialMatch) {
+                        this.className = 'typing-input';
+                    } else {
+                        this.className = 'typing-input incorrect';
+                    }
+                }
+            } else if (cleanEn.startsWith(cleanVal)) {
+                this.className = 'typing-input';
+            } else {
+                this.className = 'typing-input incorrect';
             }
         }
     });
@@ -627,7 +640,7 @@
         const answerReveal = document.getElementById('answerReveal');
 
         let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
-        let isCorrect = isMatchAnyMeaning(val, targetAnswer);
+        let isCorrect = (fcDirection === 'en2th') ? isMatchAnyMeaning(val, targetAnswer) : (cleanString(val) === cleanString(targetAnswer));
 
         isProcessingFc = true;
 
@@ -645,7 +658,7 @@
         }
     }
 
-    // --- โหมดเกมจับคู่ (เล่นเป็นชุดจนครบทุกคำ) ---
+    // --- โหมดเกมจับคู่ ---
     function initMatchingSet() {
         const grid = document.getElementById('matchingGrid');
         grid.innerHTML = '';
