@@ -211,7 +211,6 @@
         .correct { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
         .incorrect { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
 
-        /* ส่วนแสดงเฉลย */
         .answer-reveal-box {
             margin-top: 10px;
             font-size: 16px;
@@ -278,6 +277,63 @@
         }
         .progress-bar { height: 100%; background-color: #2563eb; width: 0%; transition: width 0.3s ease; }
         .score-info { margin-top: 8px; font-size: 13px; color: #64748b; }
+
+        /* Style สำหรับเกมใหม่ Speed Vocab */
+        .speed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+        }
+        .speed-timer { font-size: 20px; font-weight: 700; color: #dc2626; }
+        .speed-score { font-size: 18px; font-weight: 700; color: #2563eb; }
+        .speed-combo { font-size: 14px; font-weight: 600; color: #16a34a; }
+
+        .speed-word-box {
+            background-color: #eff6ff;
+            border: 2px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 25px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 20px;
+        }
+
+        .speed-choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .speed-choice-btn {
+            background-color: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .speed-choice-btn:hover {
+            border-color: #3b82f6;
+            background-color: #f0f7ff;
+        }
+        .speed-choice-btn.correct-btn {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            color: #15803d !important;
+        }
+        .speed-choice-btn.incorrect-btn {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #b91c1c !important;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +359,7 @@
             <label><input type="radio" name="appMode" value="practice" checked onclick="updateSubOptions('practice')"> ✍️ ฝึกพิมพ์ตาม (Typing)</label>
             <label><input type="radio" name="appMode" value="flashcard" onclick="updateSubOptions('flashcard')"> 🎴 แฟลชการ์ด (Flashcards)</label>
             <label><input type="radio" name="appMode" value="matching" onclick="updateSubOptions('matching')"> 🧩 เกมจับคู่ (Matching)</label>
+            <label><input type="radio" name="appMode" value="speed" onclick="updateSubOptions('speed')"> ⚡ แข่งคำศัพท์จับเวลา (Speed)</label>
         </div>
 
         <!-- ตัวเลือกภาษาสำหรับฝึกพิมพ์ตาม -->
@@ -337,16 +394,12 @@
     <!-- โหมด 1: ฝึกพิมพ์ทั่วไป & โหมด 2: แฟลชการ์ด -->
     <div id="practice-section" class="view-section">
         <div class="flashcard-display-container">
-            <!-- ด้านซ้าย: ภาษาอังกฤษ -->
             <div class="fc-box">
                 <div class="fc-label">English</div>
                 <div class="word-display" id="targetWord">---</div>
                 <button class="btn-speaker" id="speakerBtn" onclick="replayAudio()" title="ฟังเสียง">🔊</button>
             </div>
-            
             <div class="fc-divider-line"></div>
-            
-            <!-- ด้านขวา: ภาษาไทย -->
             <div class="fc-box">
                 <div class="fc-label">Thai</div>
                 <div class="meaning-display" id="targetMeaning">---</div>
@@ -394,6 +447,21 @@
 
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
+
+    <!-- โหมด 4: เกมจับเวลา Speed Vocab (เพิ่มใหม่) -->
+    <div id="speed-section" class="view-section">
+        <div class="speed-header">
+            <div class="speed-timer" id="speedTimer">⏱️ 60s</div>
+            <div class="speed-score" id="speedScore">คะแนน: 0</div>
+            <div class="speed-combo" id="speedCombo">Combo x0</div>
+        </div>
+
+        <div class="speed-word-box" id="speedTargetWord">---</div>
+
+        <div class="speed-choices-grid" id="speedChoicesGrid"></div>
+
+        <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
+    </div>
 </div>
 
 <script>
@@ -405,19 +473,27 @@
     let audioCtx = null;
     let isProcessingFc = false;
 
-    // เกมจับคู่
+    // สำหรับเกมจับคู่
     let currentMatchSet = 0;
     let totalMatchSets = 0;
     const SET_SIZE = 6;
     let selectedCards = [];
     let matchedPairsCount = 0;
 
+    // สำหรับเกม Speed Vocab (ใหม่)
+    let speedTimerInterval = null;
+    let speedTimeLeft = 60;
+    let speedScore = 0;
+    let speedCombo = 0;
+    let speedCurrentTarget = null;
+    let isSpeedLock = false;
+
     // Drag & Drop
     const dropArea = document.getElementById('dropArea');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, preventDefaults, false));
     function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
     ['dragenter', 'dragover'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.add('dragover'), false));
-    ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('dragover'), false));
+    ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('dragleave'), false));
     dropArea.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) readFile(e.dataTransfer.files[0]); });
     function handleFileSelect(e) { if (e.target.files.length) readFile(e.target.files[0]); }
     function readFile(file) {
@@ -466,7 +542,6 @@
         return str.toLowerCase().replace(/\s+/g, ' ').trim();
     }
 
-    // ตรวจสอบความถูกต้องโดยรองรับตัวแบ่ง / , ;
     function checkFlexibleAnswer(userInputStr, targetFullStr) {
         const cleanedUser = cleanString(userInputStr);
         if (!cleanedUser) return false;
@@ -484,6 +559,12 @@
         }
 
         currentMode = document.querySelector('input[name="appMode"]:checked').value;
+
+        if (currentMode === 'speed' && wordList.length < 4) {
+            alert('โหมดแข่งคำศัพท์จำเป็นต้องมีคำศัพท์อย่างน้อย 4 คำขึ้นไปครับ');
+            return;
+        }
+
         practiceLang = document.querySelector('input[name="practiceLang"]:checked').value;
         fcDirection = document.querySelector('input[name="fcDirection"]:checked').value;
         const isRandom = document.querySelector('input[name="wordOrder"]:checked').value === 'random';
@@ -497,6 +578,9 @@
             currentMatchSet = 0;
             totalMatchSets = Math.ceil(wordList.length / SET_SIZE);
             initMatchingSet();
+        } else if (currentMode === 'speed') {
+            document.getElementById('speed-section').style.display = 'block';
+            startSpeedGame();
         } else {
             document.getElementById('practice-section').style.display = 'block';
             currentIndex = 0;
@@ -504,7 +588,7 @@
         }
     }
 
-    // --- โหมดฝึกพิมพ์ & แฟลชการ์ด ---
+    // --- โหมด 1 & 2: ฝึกพิมพ์ & แฟลชการ์ด ---
     function showPracticeOrFlashcardWord() {
         if (currentIndex >= wordList.length) {
             alert('🎉 ยินดีด้วย! คุณทำครบทุกคำเรียบร้อยแล้ว');
@@ -557,7 +641,7 @@
         inputField.focus();
     }
 
-    // โหมดฝึกพิมพ์ตาม (Real-time)
+    // ฝึกพิมพ์ตาม Real-time
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
@@ -617,14 +701,12 @@
         }
     });
 
-    // กด Enter ตรวจคำตอบแฟลชการ์ด
     document.getElementById('userInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && currentMode === 'flashcard') {
             checkFlashcardAnswer();
         }
     });
 
-    // ฟังก์ชันตรวจคำตอบของโหมดแฟลชการ์ด (แก้ไขแล้ว)
     function checkFlashcardAnswer() {
         if (isProcessingFc) return;
         
@@ -634,13 +716,10 @@
         const answerReveal = document.getElementById('answerReveal');
 
         let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
-        
-        // ตรวจคำตอบ (ถ้าตอบทายคำแปลไทย จะใช้ระบบแยกย่อย / , ;)
         let isCorrect = (fcDirection === 'en2th') ? checkFlexibleAnswer(val, targetAnswer) : (cleanString(val) === cleanString(targetAnswer));
 
         isProcessingFc = true;
 
-        // แสดงคำเฉลยบนการ์ดด้วย
         if (fcDirection === 'en2th') {
             document.getElementById('targetMeaning').innerText = item.meaning;
         } else {
@@ -661,7 +740,7 @@
         }
     }
 
-    // --- โหมดเกมจับคู่ ---
+    // --- โหมด 3: เกมจับคู่ ---
     function initMatchingSet() {
         const grid = document.getElementById('matchingGrid');
         grid.innerHTML = '';
@@ -736,6 +815,96 @@
         }
     }
 
+    // --- โหมด 4: เกมจับเวลา Speed Vocab (ใหม่) ---
+    function startSpeedGame() {
+        speedTimeLeft = 60;
+        speedScore = 0;
+        speedCombo = 0;
+        isSpeedLock = false;
+
+        document.getElementById('speedScore').innerText = `คะแนน: ${speedScore}`;
+        document.getElementById('speedCombo').innerText = `Combo x${speedCombo}`;
+        document.getElementById('speedTimer').innerText = `⏱️ ${speedTimeLeft}s`;
+
+        clearInterval(speedTimerInterval);
+        speedTimerInterval = setInterval(() => {
+            speedTimeLeft--;
+            document.getElementById('speedTimer').innerText = `⏱️ ${speedTimeLeft}s`;
+            if (speedTimeLeft <= 0) {
+                clearInterval(speedTimerInterval);
+                alert(`🏁 หมดเวลาแล้ว! คะแนนรวมของคุณคือ: ${speedScore} คะแนน (ทำคอมโบสูงสุด x${speedCombo})`);
+                resetApp();
+            }
+        }, 1000);
+
+        nextSpeedQuestion();
+    }
+
+    function nextSpeedQuestion() {
+        isSpeedLock = false;
+        const randomIndex = Math.floor(Math.random() * wordList.length);
+        speedCurrentTarget = wordList[randomIndex];
+
+        document.getElementById('speedTargetWord').innerText = speedCurrentTarget.word;
+
+        // สุ่มสร้าง 4 ตัวเลือก
+        let choices = [speedCurrentTarget.meaning];
+        let availableOtherWords = wordList.filter(w => w.word !== speedCurrentTarget.word);
+        availableOtherWords = shuffleArray(availableOtherWords);
+
+        for (let i = 0; i < Math.min(3, availableOtherWords.length); i++) {
+            choices.push(availableOtherWords[i].meaning);
+        }
+
+        choices = shuffleArray(choices);
+
+        const grid = document.getElementById('speedChoicesGrid');
+        grid.innerHTML = '';
+
+        choices.forEach(choiceText => {
+            const btn = document.createElement('button');
+            btn.className = 'speed-choice-btn';
+            btn.innerText = choiceText;
+            btn.onclick = () => selectSpeedChoice(btn, choiceText);
+            grid.appendChild(btn);
+        });
+    }
+
+    function selectSpeedChoice(btn, selectedText) {
+        if (isSpeedLock) return;
+        isSpeedLock = true;
+
+        speakWord(speedCurrentTarget.word);
+
+        const isCorrect = (selectedText === speedCurrentTarget.meaning);
+
+        if (isCorrect) {
+            btn.classList.add('correct-btn');
+            speedCombo++;
+            const bonusScore = Math.min(speedCombo * 20, 100);
+            speedScore += (100 + bonusScore);
+        } else {
+            btn.classList.add('incorrect-btn');
+            speedCombo = 0;
+            speedScore = Math.max(0, speedScore - 50);
+
+            // ไฮไลต์ปุ่มที่ถูกต้อง
+            const allBtns = document.querySelectorAll('.speed-choice-btn');
+            allBtns.forEach(b => {
+                if (b.innerText === speedCurrentTarget.meaning) {
+                    b.classList.add('correct-btn');
+                }
+            });
+        }
+
+        document.getElementById('speedScore').innerText = `คะแนน: ${speedScore}`;
+        document.getElementById('speedCombo').innerText = `Combo x${speedCombo}`;
+
+        setTimeout(() => {
+            nextSpeedQuestion();
+        }, isCorrect ? 400 : 1000);
+    }
+
     // --- ระบบควบคุมเสียง ---
     function updateAudioSettings() {
         const vol = document.getElementById('volumeRange').value;
@@ -773,9 +942,11 @@
     }
 
     function resetApp() {
+        if (speedTimerInterval) clearInterval(speedTimerInterval);
         document.getElementById('setup-section').style.display = 'block';
         document.getElementById('practice-section').style.display = 'none';
         document.getElementById('matching-section').style.display = 'none';
+        document.getElementById('speed-section').style.display = 'none';
         document.getElementById('dropText').innerText = 'ลากไฟล์ (.txt, .csv) มาวางที่นี่ หรือคลิกเพื่ออัปโหลด';
         document.getElementById('fileInput').value = '';
     }
