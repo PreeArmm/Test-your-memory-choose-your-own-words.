@@ -393,7 +393,7 @@
     let audioCtx = null;
     let isProcessingFc = false;
 
-    // สำหรับแมปปิ้งคีย์บอร์ด ENG -> THAI
+    // ตารางแปลงตัวอักษร Eng -> Thai
     const enToThMap = {
         'q':'ๆ', 'w':'ไ', 'e':'ำ', 'r':'พ', 't':'ะ', 'y':'ั', 'u':'ี', 'i':'ร', 'o':'น', 'p':'ย', '[':'บ', ']':'ล', '\\':'ฃ',
         'a':'ฟ', 's':'ห', 'd':'ก', 'f':'ด', 'g':'เ', 'h':'้', 'j':'่', 'k':'า', 'l':'ส', ';':'วง', '\'':'ง',
@@ -403,8 +403,16 @@
         'Z':'(' , 'X':')', 'C':'ฉ', 'V':'ฮ', 'B':'ฺ', 'N':'์', 'M':'?', '<':'ฒ', '>':'ฬ', '?':'ฦ'
     };
 
-    function convertEnToTh(text) {
-        return text.split('').map(char => enToThMap[char] || char).join('');
+    // ตารางแปลงตัวอักษร Thai -> Eng
+    const thToEnMap = {};
+    for (let key in enToThMap) {
+        thToEnMap[enToThMap[key]] = key;
+    }
+
+    function convertChar(char, targetLang) {
+        if (targetLang === 'th') return enToThMap[char] || char;
+        if (targetLang === 'en') return thToEnMap[char] || char;
+        return char;
     }
 
     // Match & Speed states
@@ -466,17 +474,6 @@
 
     function cleanString(str) {
         return str.toLowerCase().replace(/\s+/g, '').trim();
-    }
-
-    function checkFlexibleAnswer(userInputStr, targetFullStr) {
-        const cleanedUser = cleanString(userInputStr);
-        const convertedUser = cleanString(convertEnToTh(userInputStr));
-        if (!cleanedUser) return false;
-
-        const subAnswers = targetFullStr.split(/[/,;]/).map(s => cleanString(s));
-        return subAnswers.some(ans => ans === cleanedUser || ans === convertedUser) || 
-               cleanString(targetFullStr) === cleanedUser || 
-               cleanString(targetFullStr) === convertedUser;
     }
 
     function startApp() {
@@ -542,11 +539,11 @@
             document.getElementById('targetMeaning').innerText = item.meaning;
 
             if (practiceLang === 'en') {
-                inputField.placeholder = `พิมพ์ตามภาษาอังกฤษ (${item.word})`;
+                inputField.placeholder = `พิมพ์ภาษาอังกฤษ (${item.word})`;
             } else if (practiceLang === 'th') {
-                inputField.placeholder = `พิมพ์ตามภาษาไทย (${item.meaning})`;
+                inputField.placeholder = `พิมพ์ภาษาไทย (${item.meaning})`;
             } else {
-                inputField.placeholder = `พิมพ์ต่อเนื่องไม่ต้องสลับคีย์บอร์ด (${item.word}${item.meaning.split(/[/,;]/)[0]})`;
+                inputField.placeholder = `พิมพ์ต่อเนื่องอัตโนมัติ (${item.word}${item.meaning.split(/[/,;]/)[0]})`;
             }
             speakWord(item.word, 'en');
 
@@ -571,7 +568,45 @@
         inputField.focus();
     }
 
-    // ระบบตรวจการพิมพ์ Real-time
+    // --- ระบบดักจับการกดปุ่มเพื่อเปลี่ยนภาษา Real-time บนแป้นพิมพ์ ---
+    document.getElementById('userInput').addEventListener('beforeinput', function(e) {
+        if (currentMode !== 'practice' || !e.data) return;
+
+        const item = wordList[currentIndex];
+        const currentVal = this.value;
+        let expectedLang = 'en';
+
+        if (practiceLang === 'en') {
+            expectedLang = 'en';
+        } else if (practiceLang === 'th') {
+            expectedLang = 'th';
+        } else if (practiceLang === 'both') {
+            const cleanEn = cleanString(item.word);
+            const cleanCur = cleanString(currentVal);
+            if (cleanCur.length < cleanEn.length) {
+                expectedLang = 'en';
+            } else {
+                expectedLang = 'th';
+            }
+        }
+
+        // แปลงตัวอักษรทันทีตามภาษาที่ต้องการ
+        let convertedData = '';
+        for (let char of e.data) {
+            convertedData += convertChar(char, expectedLang);
+        }
+
+        if (convertedData !== e.data) {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + convertedData + this.value.substring(end);
+            this.setSelectionRange(start + convertedData.length, start + convertedData.length);
+            this.dispatchEvent(new Event('input'));
+        }
+    });
+
+    // ระบบตรวจความถูกต้องของตัวอักษร
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
@@ -589,12 +624,15 @@
                 this.className = 'typing-input incorrect';
             }
         } else if (practiceLang === 'th') {
-            if (checkFlexibleAnswer(val, item.meaning)) {
+            const subAnswers = item.meaning.split(/[/,;]/).map(s => cleanString(s));
+            if (subAnswers.some(ans => ans === cleanString(val))) {
                 this.className = 'typing-input correct';
                 speakWord(item.meaning, 'th');
                 setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
-            } else {
+            } else if (subAnswers.some(ans => ans.startsWith(cleanString(val)))) {
                 this.className = 'typing-input';
+            } else {
+                this.className = 'typing-input incorrect';
             }
         } else if (practiceLang === 'both') {
             const cleanVal = cleanString(val);
@@ -603,22 +641,18 @@
 
             if (cleanVal.startsWith(cleanEn)) {
                 const tailInput = cleanVal.slice(cleanEn.length);
-                const convertedTail = cleanString(convertEnToTh(tailInput));
 
                 if (tailInput === '') {
                     this.className = 'typing-input';
-                } else if (subMeanings.some(m => m === tailInput || m === convertedTail)) {
+                } else if (subMeanings.some(m => m === tailInput)) {
                     this.className = 'typing-input correct';
                     speakWord(item.word, 'en');
                     setTimeout(() => { speakWord(item.meaning, 'th'); }, 800);
                     setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1200);
+                } else if (subMeanings.some(m => m.startsWith(tailInput))) {
+                    this.className = 'typing-input';
                 } else {
-                    const isPartialMatch = subMeanings.some(m => m.startsWith(tailInput) || m.startsWith(convertedTail));
-                    if (isPartialMatch) {
-                        this.className = 'typing-input';
-                    } else {
-                        this.className = 'typing-input incorrect';
-                    }
+                    this.className = 'typing-input incorrect';
                 }
             } else if (cleanEn.startsWith(cleanVal)) {
                 this.className = 'typing-input';
@@ -643,7 +677,7 @@
         const answerReveal = document.getElementById('answerReveal');
 
         let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
-        let isCorrect = (fcDirection === 'en2th') ? checkFlexibleAnswer(val, targetAnswer) : (cleanString(val) === cleanString(targetAnswer));
+        let isCorrect = (cleanString(val) === cleanString(targetAnswer));
 
         isProcessingFc = true;
 
