@@ -298,7 +298,7 @@
         </div>
 
         <div class="divider">หรือวางข้อความโดยตรง</div>
-        <textarea id="wordInput" placeholder="apple แอปเปิ้ล&#10;banana : กล้วย&#10;Surrogacy การอุ้มบุญ / การตั้งครรภ์แทน"></textarea>
+        <textarea id="wordInput" placeholder="ice-cream ไอศกรีม&#10;good-looking หน้าตาดี&#10;Surrogacy การอุ้มบุญ / การตั้งครรภ์แทน"></textarea>
 
         <div class="section-title">1. เลือกโหมดการเรียนรู้</div>
         <div class="options-grid">
@@ -366,12 +366,12 @@
         <div class="audio-controls">
             <div class="control-group">
                 <span>🔊 ความดัง:</span>
-                <input type="range" id="volumeRange" min="0" max="2" step="0.1" value="2" onchange="updateAudioSettings()">
-                <span id="volumeVal">200%</span>
+                <input type="range" id="volumeRange" min="0" max="1" step="0.1" value="1" onchange="updateAudioSettings('practice')">
+                <span id="volumeVal">100%</span>
             </div>
             <div class="control-group">
                 <span>⚡ ความเร็ว:</span>
-                <input type="range" id="rateRange" min="0.5" max="1.5" step="0.1" value="0.9" onchange="updateAudioSettings()">
+                <input type="range" id="rateRange" min="0.5" max="1.5" step="0.1" value="0.9" onchange="updateAudioSettings('practice')">
                 <span id="rateVal">0.9x</span>
             </div>
         </div>
@@ -381,7 +381,7 @@
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
-    <!-- โหมดใหม่: Listening Mode -->
+    <!-- โหมด Listening Mode -->
     <div id="listening-section" class="view-section">
         <h2 id="listenTitle">🎧 ฟังเสียงแล้วเลือกคำตอบ</h2>
         <button class="btn-speaker-large" id="listenPlayBtn" onclick="playCurrentListenAudio()" title="กดฟังเสียงซ้ำ">🔊</button>
@@ -394,7 +394,7 @@
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
-    <!-- โหมด 3: Matching -->
+    <!-- โหมด Matching -->
     <div id="matching-section" class="view-section">
         <h2>🧩 เกมจับคู่คำศัพท์</h2>
         <div class="score-info" id="setInfoText" style="font-weight:600; color:#2563eb; font-size:15px;">ชุดที่ 1 / 1</div>
@@ -403,18 +403,20 @@
         <div class="audio-controls">
             <div class="control-group">
                 <span>🔊 ความดัง:</span>
-                <input type="range" id="volumeRangeMatch" min="0" max="2" step="0.1" value="2" onchange="updateAudioSettings()">
+                <input type="range" id="volumeRangeMatch" min="0" max="1" step="0.1" value="1" onchange="updateAudioSettings('matching')">
+                <span id="volumeValMatch">100%</span>
             </div>
             <div class="control-group">
                 <span>⚡ ความเร็ว:</span>
-                <input type="range" id="rateRangeMatch" min="0.5" max="1.5" step="0.1" value="0.9" onchange="updateAudioSettings()">
+                <input type="range" id="rateRangeMatch" min="0.5" max="1.5" step="0.1" value="0.9" onchange="updateAudioSettings('matching')">
+                <span id="rateValMatch">0.9x</span>
             </div>
         </div>
 
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
-    <!-- โหมด 4: Speed -->
+    <!-- โหมด Speed -->
     <div id="speed-section" class="view-section">
         <div class="speed-header">
             <div class="speed-timer" id="speedTimer">⏱️ 60s</div>
@@ -436,7 +438,6 @@
     let fcDirection = 'en2th';
     let listenDirection = 'th2en';
     let practiceLang = 'en'; 
-    let audioCtx = null;
     let isProcessingFc = false;
     let isProcessingListen = false;
 
@@ -471,7 +472,7 @@
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, preventDefaults, false));
     function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
     ['dragenter', 'dragover'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.add('dragover'), false));
-    ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('dragleave'), false));
+    ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('dragover'), false));
     dropArea.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) readFile(e.dataTransfer.files[0]); });
     function handleFileSelect(e) { if (e.target.files.length) readFile(e.target.files[0]); }
     function readFile(file) {
@@ -495,7 +496,8 @@
         lines.forEach(line => {
             const trimmed = line.trim();
             if (!trimmed) return;
-            const splitMatch = trimmed.match(/^([A-Za-z0-9\s'-]+)[=:\t,\-–—]\s*(.+)$/);
+            // แก้ไขจุดที่ 1: ตัด - ออกจากกลุ่มตัวคั่น เพื่อไม่ให้คำภาษาอังกฤษที่มีขีด (- ) โดนตัดแหว่ง
+            const splitMatch = trimmed.match(/^([A-Za-z0-9\s'-]+)[=:\t,–—]\s*(.+)$/);
             if (splitMatch) {
                 parsedResults.push({ word: splitMatch[1].trim(), meaning: splitMatch[2].trim() });
                 return;
@@ -719,7 +721,7 @@
         }
     });
 
-    // ตรวจคำตอบแฟลชการ์ด (ผ่อนปรน ไม่ต้องพิมพ์เป๊ะทุกตัวอักษร)
+    // ตรวจคำตอบแฟลชการ์ด
     function checkFlashcardAnswer() {
         if (isProcessingFc) return;
         
@@ -760,7 +762,7 @@
         }
     }
 
-    // --- โหมดใหม่: ฟังเสียงแล้วเลือกคำ (Listening Mode) ---
+    // --- Listening Mode ---
     function showListeningQuestion() {
         if (currentIndex >= wordList.length) {
             alert('🎉 ยินดีด้วย! คุณทดสอบการฟังครบทุกคำเรียบร้อยแล้ว');
@@ -777,8 +779,15 @@
         document.getElementById('progressBarListen').style.width = progressPercent + '%';
         document.getElementById('progressTextListen').innerText = `คำที่ ${currentIndex + 1} / ${wordList.length}`;
 
-        // แสดงตัวเลือกคำตอบทั้งหมดในระบบ
-        let choices = wordList.map(w => (listenDirection === 'th2en') ? w.word : w.meaning);
+        // แก้ไขจุดที่ 5: สุ่มคำตอบมาแสดง 4 ตัวเลือก (1 ตัวเลือกที่ถูก + 3 ตัวเลือกหลอก)
+        const correctTarget = (listenDirection === 'th2en') ? item.word : item.meaning;
+        let otherItems = wordList.filter((_, idx) => idx !== currentIndex);
+        otherItems = shuffleArray(otherItems);
+
+        let choices = [correctTarget];
+        for (let i = 0; i < Math.min(3, otherItems.length); i++) {
+            choices.push((listenDirection === 'th2en') ? otherItems[i].word : otherItems[i].meaning);
+        }
         choices = shuffleArray(choices);
 
         choices.forEach(choiceText => {
@@ -826,7 +835,7 @@
         }
     }
 
-    // --- โหมด 3: จับคู่ ---
+    // --- โหมด จับคู่ ---
     function initMatchingSet() {
         const grid = document.getElementById('matchingGrid');
         grid.innerHTML = '';
@@ -903,7 +912,7 @@
         }
     }
 
-    // --- โหมด 4: Speed Vocab ---
+    // --- โหมด Speed Vocab ---
     function startSpeedGame() {
         speedTimeLeft = 60;
         speedScore = 0;
@@ -989,30 +998,42 @@
         setTimeout(() => { nextSpeedQuestion(); }, isCorrect ? 400 : 1000);
     }
 
-    // --- ระบบเล่นเสียงอ่าน ---
-    function updateAudioSettings() {
-        const vol = document.getElementById('volumeRange').value;
-        const rate = document.getElementById('rateRange').value;
-        document.getElementById('volumeVal').innerText = Math.round(vol * 100) + '%';
-        document.getElementById('rateVal').innerText = rate + 'x';
+    // --- ระบบเล่นเสียงอ่าน (Speech Synthesis) ---
+    function updateAudioSettings(modeContext) {
+        if (modeContext === 'matching') {
+            const volMatch = document.getElementById('volumeRangeMatch').value;
+            const rateMatch = document.getElementById('rateRangeMatch').value;
+            document.getElementById('volumeValMatch').innerText = Math.round(volMatch * 100) + '%';
+            document.getElementById('rateValMatch').innerText = rateMatch + 'x';
+        } else {
+            const vol = document.getElementById('volumeRange').value;
+            const rate = document.getElementById('rateRange').value;
+            document.getElementById('volumeVal').innerText = Math.round(vol * 100) + '%';
+            document.getElementById('rateVal').innerText = rate + 'x';
+        }
     }
 
     function speakWord(text, lang = 'en') {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
             
-            const volSetting = parseFloat(document.getElementById('volumeRange').value);
-            const rateSetting = parseFloat(document.getElementById('rateRange').value);
+            // แก้ไขจุดที่ 4: อ่านค่า volume และ rate ตามโหมดปัจจุบันที่เปิดใช้งานอยู่
+            let volSetting = 1.0;
+            let rateSetting = 0.9;
+
+            if (currentMode === 'matching') {
+                volSetting = parseFloat(document.getElementById('volumeRangeMatch').value);
+                rateSetting = parseFloat(document.getElementById('rateRangeMatch').value);
+            } else {
+                volSetting = parseFloat(document.getElementById('volumeRange').value);
+                rateSetting = parseFloat(document.getElementById('rateRange').value);
+            }
 
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = (lang === 'th') ? 'th-TH' : 'en-US';
-            utterance.volume = Math.min(volSetting, 1.0);
+            // แก้ไขจุดที่ 3: ใช้ SpeechSynthesisUtterance volume (0.0 ถึง 1.0) อย่างถูกต้อง
+            utterance.volume = Math.max(0.0, Math.min(volSetting, 1.0));
             utterance.rate = rateSetting;
-
-            if (volSetting > 1.0) {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-            }
 
             window.speechSynthesis.speak(utterance);
         }
