@@ -159,6 +159,24 @@
         }
         .btn-speaker:hover { background-color: #e2e8f0; transform: scale(1.05); }
 
+        .btn-speaker-large {
+            width: 70px;
+            height: 70px;
+            font-size: 32px;
+            border-radius: 50%;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-speaker-large:hover { transform: scale(1.08); background-color: #1d4ed8; }
+
         input[type="text"].typing-input {
             font-size: 20px;
             padding: 10px;
@@ -194,26 +212,31 @@
         .control-group { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; font-weight: 500; }
         .control-group input[type="range"] { width: 90px; cursor: pointer; }
 
-        .matching-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .match-card {
+        .matching-grid, .listening-choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .listening-choices-grid { max-height: 350px; overflow-y: auto; padding: 5px; }
+        
+        .match-card, .listen-choice-btn {
             background-color: #f8fafc;
             border: 2px solid #cbd5e1;
             border-radius: 10px;
-            padding: 15px;
-            font-size: 16px;
+            padding: 14px;
+            font-size: 15px;
             font-weight: 600;
             color: #334155;
             cursor: pointer;
             user-select: none;
-            transition: all 0.2s;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 60px;
+            min-height: 50px;
         }
-        .match-card:hover { border-color: #3b82f6; background-color: #eff6ff; }
+        .match-card:hover, .listen-choice-btn:hover { border-color: #3b82f6; background-color: #eff6ff; }
         .match-card.selected { border-color: #2563eb; background-color: #dbeafe; color: #1e40af; }
         .match-card.matched { visibility: hidden; opacity: 0; pointer-events: none; }
+        
+        .listen-choice-btn.correct-choice { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+        .listen-choice-btn.incorrect-choice { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
 
         .progress-bar-container { width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px; margin-top: 15px; overflow: hidden; }
         .progress-bar { height: 100%; background-color: #2563eb; width: 0%; transition: width 0.3s ease; }
@@ -281,6 +304,7 @@
         <div class="options-grid">
             <label><input type="radio" name="appMode" value="practice" checked onclick="updateSubOptions('practice')"> ✍️ ฝึกพิมพ์ตาม (Typing)</label>
             <label><input type="radio" name="appMode" value="flashcard" onclick="updateSubOptions('flashcard')"> 🎴 แฟลชการ์ด (Flashcards)</label>
+            <label><input type="radio" name="appMode" value="listening" onclick="updateSubOptions('listening')"> 🎧 ฟังเสียงแล้วเลือกคำ (Listening)</label>
             <label><input type="radio" name="appMode" value="matching" onclick="updateSubOptions('matching')"> 🧩 เกมจับคู่ (Matching)</label>
             <label><input type="radio" name="appMode" value="speed" onclick="updateSubOptions('speed')"> ⚡ แข่งคำศัพท์จับเวลา (Speed)</label>
         </div>
@@ -302,6 +326,14 @@
             </div>
         </div>
 
+        <div id="listeningOptions" style="display: none;">
+            <div class="section-title">รูปแบบการทดสอบฟังเสียง</div>
+            <div class="options-grid">
+                <label><input type="radio" name="listenDirection" value="th2en" checked> 🔊🇹🇭 ฟังเสียงไทย ➔ เลือกคำอังกฤษ</label>
+                <label><input type="radio" name="listenDirection" value="en2th"> 🔊🇬🇧 ฟังเสียงอังกฤษ ➔ เลือกคำไทย</label>
+            </div>
+        </div>
+
         <div class="section-title">2. การเรียงลำดับ</div>
         <div class="options-grid">
             <label><input type="radio" name="wordOrder" value="original" checked> 📋 เรียงตามลำดับเดิม</label>
@@ -311,7 +343,7 @@
         <button class="btn-primary" onclick="startApp()">เริ่มเรียนรู้</button>
     </div>
 
-    <!-- โหมด 1 & 2 -->
+    <!-- โหมด 1 & 2 (Practice & Flashcard) -->
     <div id="practice-section" class="view-section">
         <div class="flashcard-display-container">
             <div class="fc-box">
@@ -349,7 +381,20 @@
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
-    <!-- โหมด 3 -->
+    <!-- โหมดใหม่: Listening Mode -->
+    <div id="listening-section" class="view-section">
+        <h2 id="listenTitle">🎧 ฟังเสียงแล้วเลือกคำตอบ</h2>
+        <button class="btn-speaker-large" id="listenPlayBtn" onclick="playCurrentListenAudio()" title="กดฟังเสียงซ้ำ">🔊</button>
+        <p style="color: #64748b; font-size: 13px;">คลิกที่ปุ่มลำโพงเพื่อฟังเสียงซ้ำได้</p>
+
+        <div class="listening-choices-grid" id="listeningChoicesGrid"></div>
+
+        <div class="progress-bar-container"><div class="progress-bar" id="progressBarListen"></div></div>
+        <div class="score-info" id="progressTextListen">คำที่ 0 / 0</div>
+        <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
+    </div>
+
+    <!-- โหมด 3: Matching -->
     <div id="matching-section" class="view-section">
         <h2>🧩 เกมจับคู่คำศัพท์</h2>
         <div class="score-info" id="setInfoText" style="font-weight:600; color:#2563eb; font-size:15px;">ชุดที่ 1 / 1</div>
@@ -369,7 +414,7 @@
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
-    <!-- โหมด 4 -->
+    <!-- โหมด 4: Speed -->
     <div id="speed-section" class="view-section">
         <div class="speed-header">
             <div class="speed-timer" id="speedTimer">⏱️ 60s</div>
@@ -389,9 +434,11 @@
     let currentIndex = 0;
     let currentMode = 'practice';
     let fcDirection = 'en2th';
+    let listenDirection = 'th2en';
     let practiceLang = 'en'; 
     let audioCtx = null;
     let isProcessingFc = false;
+    let isProcessingListen = false;
 
     // ตารางแปลงตัวอักษร Eng -> Thai
     const enToThMap = {
@@ -403,11 +450,8 @@
         'Z':'(' , 'X':')', 'C':'ฉ', 'V':'ฮ', 'B':'ฺ', 'N':'์', 'M':'?', '<':'ฒ', '>':'ฬ', '?':'ฦ'
     };
 
-    // ตารางแปลงตัวอักษร Thai -> Eng
     const thToEnMap = {};
-    for (let key in enToThMap) {
-        thToEnMap[enToThMap[key]] = key;
-    }
+    for (let key in enToThMap) { thToEnMap[enToThMap[key]] = key; }
 
     function convertChar(char, targetLang) {
         if (targetLang === 'th') return enToThMap[char] || char;
@@ -442,6 +486,7 @@
     function updateSubOptions(mode) {
         document.getElementById('practiceOptions').style.display = (mode === 'practice') ? 'block' : 'none';
         document.getElementById('flashcardOptions').style.display = (mode === 'flashcard') ? 'block' : 'none';
+        document.getElementById('listeningOptions').style.display = (mode === 'listening') ? 'block' : 'none';
     }
 
     function parseRawText(text) {
@@ -476,6 +521,14 @@
         return str.toLowerCase().replace(/\s+/g, '').trim();
     }
 
+    function checkFlexibleAnswer(userInputStr, targetFullStr) {
+        const cleanedUser = cleanString(userInputStr);
+        if (!cleanedUser) return false;
+
+        const subAnswers = targetFullStr.split(/[/,;]/).map(s => cleanString(s));
+        return subAnswers.some(ans => ans === cleanedUser) || cleanString(targetFullStr) === cleanedUser;
+    }
+
     function startApp() {
         const rawText = document.getElementById('wordInput').value;
         wordList = parseRawText(rawText);
@@ -494,6 +547,7 @@
 
         practiceLang = document.querySelector('input[name="practiceLang"]:checked').value;
         fcDirection = document.querySelector('input[name="fcDirection"]:checked').value;
+        listenDirection = document.querySelector('input[name="listenDirection"]:checked').value;
         const isRandom = document.querySelector('input[name="wordOrder"]:checked').value === 'random';
 
         if (isRandom) wordList = shuffleArray(wordList);
@@ -508,6 +562,10 @@
         } else if (currentMode === 'speed') {
             document.getElementById('speed-section').style.display = 'block';
             startSpeedGame();
+        } else if (currentMode === 'listening') {
+            document.getElementById('listening-section').style.display = 'block';
+            currentIndex = 0;
+            showListeningQuestion();
         } else {
             document.getElementById('practice-section').style.display = 'block';
             currentIndex = 0;
@@ -568,29 +626,26 @@
         inputField.focus();
     }
 
-    // --- ระบบดักจับการกดปุ่มเพื่อเปลี่ยนภาษา Real-time บนแป้นพิมพ์ ---
+    // --- ระบบพิมพ์อัตโนมัติ Real-time Keyboard ---
     document.getElementById('userInput').addEventListener('beforeinput', function(e) {
-        if (currentMode !== 'practice' || !e.data) return;
+        if (!e.data) return;
 
         const item = wordList[currentIndex];
         const currentVal = this.value;
         let expectedLang = 'en';
 
-        if (practiceLang === 'en') {
-            expectedLang = 'en';
-        } else if (practiceLang === 'th') {
-            expectedLang = 'th';
-        } else if (practiceLang === 'both') {
-            const cleanEn = cleanString(item.word);
-            const cleanCur = cleanString(currentVal);
-            if (cleanCur.length < cleanEn.length) {
-                expectedLang = 'en';
-            } else {
-                expectedLang = 'th';
+        if (currentMode === 'practice') {
+            if (practiceLang === 'en') expectedLang = 'en';
+            else if (practiceLang === 'th') expectedLang = 'th';
+            else if (practiceLang === 'both') {
+                expectedLang = (cleanString(currentVal).length < cleanString(item.word).length) ? 'en' : 'th';
             }
+        } else if (currentMode === 'flashcard') {
+            expectedLang = (fcDirection === 'en2th') ? 'th' : 'en';
+        } else {
+            return;
         }
 
-        // แปลงตัวอักษรทันทีตามภาษาที่ต้องการ
         let convertedData = '';
         for (let char of e.data) {
             convertedData += convertChar(char, expectedLang);
@@ -606,33 +661,29 @@
         }
     });
 
-    // ระบบตรวจความถูกต้องของตัวอักษร
+    // ระบบตรวจคำตอบ Real-time สำหรับโหมดฝึกพิมพ์
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
         const val = e.target.value;
 
         if (practiceLang === 'en') {
-            const target = item.word;
-            if (cleanString(val) === cleanString(target)) {
+            if (cleanString(val) === cleanString(item.word)) {
                 this.className = 'typing-input correct';
-                speakWord(target, 'en');
+                speakWord(item.word, 'en');
                 setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
-            } else if (cleanString(target).startsWith(cleanString(val))) {
+            } else if (cleanString(item.word).startsWith(cleanString(val))) {
                 this.className = 'typing-input';
             } else {
                 this.className = 'typing-input incorrect';
             }
         } else if (practiceLang === 'th') {
-            const subAnswers = item.meaning.split(/[/,;]/).map(s => cleanString(s));
-            if (subAnswers.some(ans => ans === cleanString(val))) {
+            if (checkFlexibleAnswer(val, item.meaning)) {
                 this.className = 'typing-input correct';
                 speakWord(item.meaning, 'th');
                 setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
-            } else if (subAnswers.some(ans => ans.startsWith(cleanString(val)))) {
-                this.className = 'typing-input';
             } else {
-                this.className = 'typing-input incorrect';
+                this.className = 'typing-input';
             }
         } else if (practiceLang === 'both') {
             const cleanVal = cleanString(val);
@@ -668,6 +719,7 @@
         }
     });
 
+    // ตรวจคำตอบแฟลชการ์ด (ผ่อนปรน ไม่ต้องพิมพ์เป๊ะทุกตัวอักษร)
     function checkFlashcardAnswer() {
         if (isProcessingFc) return;
         
@@ -676,8 +728,14 @@
         const inputField = document.getElementById('userInput');
         const answerReveal = document.getElementById('answerReveal');
 
+        let isCorrect = false;
         let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
-        let isCorrect = (cleanString(val) === cleanString(targetAnswer));
+
+        if (fcDirection === 'en2th') {
+            isCorrect = checkFlexibleAnswer(val, item.meaning);
+        } else {
+            isCorrect = (cleanString(val) === cleanString(item.word));
+        }
 
         isProcessingFc = true;
 
@@ -699,6 +757,72 @@
             answerReveal.innerText = `✕ เฉลย: ${targetAnswer}`;
             answerReveal.className = 'answer-reveal-box show-incorrect';
             setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 2400);
+        }
+    }
+
+    // --- โหมดใหม่: ฟังเสียงแล้วเลือกคำ (Listening Mode) ---
+    function showListeningQuestion() {
+        if (currentIndex >= wordList.length) {
+            alert('🎉 ยินดีด้วย! คุณทดสอบการฟังครบทุกคำเรียบร้อยแล้ว');
+            resetApp();
+            return;
+        }
+
+        isProcessingListen = false;
+        const item = wordList[currentIndex];
+        const grid = document.getElementById('listeningChoicesGrid');
+        grid.innerHTML = '';
+
+        const progressPercent = (currentIndex / wordList.length) * 100;
+        document.getElementById('progressBarListen').style.width = progressPercent + '%';
+        document.getElementById('progressTextListen').innerText = `คำที่ ${currentIndex + 1} / ${wordList.length}`;
+
+        // แสดงตัวเลือกคำตอบทั้งหมดในระบบ
+        let choices = wordList.map(w => (listenDirection === 'th2en') ? w.word : w.meaning);
+        choices = shuffleArray(choices);
+
+        choices.forEach(choiceText => {
+            const btn = document.createElement('button');
+            btn.className = 'listen-choice-btn';
+            btn.innerText = choiceText;
+            btn.onclick = () => selectListeningChoice(btn, choiceText, item);
+            grid.appendChild(btn);
+        });
+
+        playCurrentListenAudio();
+    }
+
+    function playCurrentListenAudio() {
+        if (wordList.length === 0 || currentIndex >= wordList.length) return;
+        const item = wordList[currentIndex];
+        if (listenDirection === 'th2en') {
+            speakWord(item.meaning, 'th');
+        } else {
+            speakWord(item.word, 'en');
+        }
+    }
+
+    function selectListeningChoice(selectedBtn, selectedText, item) {
+        if (isProcessingListen) return;
+        isProcessingListen = true;
+
+        let targetCorrectText = (listenDirection === 'th2en') ? item.word : item.meaning;
+        let isCorrect = (selectedText === targetCorrectText);
+
+        if (isCorrect) {
+            selectedBtn.classList.add('correct-choice');
+            speakWord(item.word, 'en');
+            setTimeout(() => { speakWord(item.meaning, 'th'); }, 800);
+            setTimeout(() => { currentIndex++; showListeningQuestion(); }, 1600);
+        } else {
+            selectedBtn.classList.add('incorrect-choice');
+            const allBtns = document.querySelectorAll('.listen-choice-btn');
+            allBtns.forEach(b => {
+                if (b.innerText === targetCorrectText) {
+                    b.classList.add('correct-choice');
+                }
+            });
+            setTimeout(() => { currentIndex++; showListeningQuestion(); }, 2200);
         }
     }
 
@@ -865,7 +989,7 @@
         setTimeout(() => { nextSpeedQuestion(); }, isCorrect ? 400 : 1000);
     }
 
-    // --- ระบบเล่นเสียงอ่านทั้ง TH & EN ---
+    // --- ระบบเล่นเสียงอ่าน ---
     function updateAudioSettings() {
         const vol = document.getElementById('volumeRange').value;
         const rate = document.getElementById('rateRange').value;
@@ -909,6 +1033,7 @@
         if (speedTimerInterval) clearInterval(speedTimerInterval);
         document.getElementById('setup-section').style.display = 'block';
         document.getElementById('practice-section').style.display = 'none';
+        document.getElementById('listening-section').style.display = 'none';
         document.getElementById('matching-section').style.display = 'none';
         document.getElementById('speed-section').style.display = 'none';
         document.getElementById('dropText').innerText = 'ลากไฟล์ (.txt, .csv) มาวางที่นี่ หรือคลิกเพื่ออัปโหลด';
