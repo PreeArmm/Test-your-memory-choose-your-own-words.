@@ -24,19 +24,8 @@
             width: 100%;
             max-width: 650px;
         }
-        h1 {
-            text-align: center;
-            color: #1e293b;
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        p.subtitle {
-            text-align: center;
-            color: #64748b;
-            font-size: 14px;
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
+        h1 { text-align: center; color: #1e293b; font-size: 24px; margin-bottom: 8px; }
+        p.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-top: 0; margin-bottom: 20px; }
         .file-drop-area {
             border: 2px dashed #cbd5e1;
             border-radius: 12px;
@@ -47,10 +36,7 @@
             transition: all 0.2s ease;
             margin-bottom: 15px;
         }
-        .file-drop-area:hover, .file-drop-area.dragover {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
-        }
+        .file-drop-area:hover, .file-drop-area.dragover { border-color: #3b82f6; background-color: #eff6ff; }
         .file-drop-icon { font-size: 28px; color: #64748b; margin-bottom: 6px; }
         .file-drop-text { color: #475569; font-size: 13px; }
         .divider {
@@ -83,13 +69,7 @@
         }
         textarea:focus { border-color: #3b82f6; }
 
-        .section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #334155;
-            margin-top: 15px;
-            margin-bottom: 8px;
-        }
+        .section-title { font-size: 14px; font-weight: 600; color: #334155; margin-top: 15px; margin-bottom: 8px; }
 
         .options-grid {
             display: grid;
@@ -100,9 +80,7 @@
             border-radius: 8px;
             border: 1px solid #e2e8f0;
         }
-        .options-grid.three-cols {
-            grid-template-columns: 1fr 1fr 1fr;
-        }
+        .options-grid.three-cols { grid-template-columns: 1fr 1fr 1fr; }
         .options-grid label {
             font-size: 13px;
             color: #334155;
@@ -160,28 +138,10 @@
             align-items: center;
             justify-content: center;
         }
-        .fc-divider-line {
-            width: 2px;
-            height: 60px;
-            background-color: #cbd5e1;
-        }
-        .fc-label {
-            font-size: 12px;
-            color: #94a3b8;
-            font-weight: 600;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-        }
-        .word-display {
-            font-size: 26px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-        .meaning-display {
-            font-size: 22px;
-            color: #475569;
-            font-weight: 600;
-        }
+        .fc-divider-line { width: 2px; height: 60px; background-color: #cbd5e1; }
+        .fc-label { font-size: 12px; color: #94a3b8; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; }
+        .word-display { font-size: 26px; font-weight: 700; color: #0f172a; }
+        .meaning-display { font-size: 22px; color: #475569; font-weight: 600; }
         
         .btn-speaker {
             background: #ffffff;
@@ -231,22 +191,10 @@
             justify-content: space-around;
             align-items: center;
         }
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #475569;
-            font-weight: 500;
-        }
+        .control-group { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; font-weight: 500; }
         .control-group input[type="range"] { width: 90px; cursor: pointer; }
 
-        .matching-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 15px;
-        }
+        .matching-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
         .match-card {
             background-color: #f8fafc;
             border: 2px solid #cbd5e1;
@@ -267,18 +215,10 @@
         .match-card.selected { border-color: #2563eb; background-color: #dbeafe; color: #1e40af; }
         .match-card.matched { visibility: hidden; opacity: 0; pointer-events: none; }
 
-        .progress-bar-container {
-            width: 100%;
-            height: 8px;
-            background-color: #e2e8f0;
-            border-radius: 4px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
+        .progress-bar-container { width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px; margin-top: 15px; overflow: hidden; }
         .progress-bar { height: 100%; background-color: #2563eb; width: 0%; transition: width 0.3s ease; }
         .score-info { margin-top: 8px; font-size: 13px; color: #64748b; }
 
-        /* Style สำหรับเกมใหม่ Speed Vocab */
         .speed-header {
             display: flex;
             justify-content: space-between;
@@ -304,11 +244,7 @@
             margin-bottom: 20px;
         }
 
-        .speed-choices-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+        .speed-choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .speed-choice-btn {
             background-color: #ffffff;
             border: 2px solid #cbd5e1;
@@ -320,26 +256,14 @@
             cursor: pointer;
             transition: all 0.15s ease;
         }
-        .speed-choice-btn:hover {
-            border-color: #3b82f6;
-            background-color: #f0f7ff;
-        }
-        .speed-choice-btn.correct-btn {
-            background-color: #dcfce7 !important;
-            border-color: #22c55e !important;
-            color: #15803d !important;
-        }
-        .speed-choice-btn.incorrect-btn {
-            background-color: #fee2e2 !important;
-            border-color: #ef4444 !important;
-            color: #b91c1c !important;
-        }
+        .speed-choice-btn:hover { border-color: #3b82f6; background-color: #f0f7ff; }
+        .speed-choice-btn.correct-btn { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+        .speed-choice-btn.incorrect-btn { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- หน้าตั้งค่าหลัก -->
     <div id="setup-section">
         <h1>ศูนย์การเรียนรู้คำศัพท์ Web App</h1>
         <p class="subtitle">อัปโหลดไฟล์ หรือกรอกคำศัพท์เพื่อเริ่มเรียนรู้</p>
@@ -353,7 +277,6 @@
         <div class="divider">หรือวางข้อความโดยตรง</div>
         <textarea id="wordInput" placeholder="apple แอปเปิ้ล&#10;banana : กล้วย&#10;Surrogacy การอุ้มบุญ / การตั้งครรภ์แทน"></textarea>
 
-        <!-- โหมดการทำงาน -->
         <div class="section-title">1. เลือกโหมดการเรียนรู้</div>
         <div class="options-grid">
             <label><input type="radio" name="appMode" value="practice" checked onclick="updateSubOptions('practice')"> ✍️ ฝึกพิมพ์ตาม (Typing)</label>
@@ -362,7 +285,6 @@
             <label><input type="radio" name="appMode" value="speed" onclick="updateSubOptions('speed')"> ⚡ แข่งคำศัพท์จับเวลา (Speed)</label>
         </div>
 
-        <!-- ตัวเลือกภาษาสำหรับฝึกพิมพ์ตาม -->
         <div id="practiceOptions">
             <div class="section-title">ส่วนที่ต้องการฝึกพิมพ์ตาม</div>
             <div class="options-grid three-cols">
@@ -372,7 +294,6 @@
             </div>
         </div>
 
-        <!-- ตัวเลือกเพิ่มเติมของแฟลชการ์ด -->
         <div id="flashcardOptions" style="display: none;">
             <div class="section-title">รูปแบบการทดสอบแฟลชการ์ด</div>
             <div class="options-grid">
@@ -381,7 +302,6 @@
             </div>
         </div>
 
-        <!-- ลำดับคำศัพท์ -->
         <div class="section-title">2. การเรียงลำดับ</div>
         <div class="options-grid">
             <label><input type="radio" name="wordOrder" value="original" checked> 📋 เรียงตามลำดับเดิม</label>
@@ -391,18 +311,19 @@
         <button class="btn-primary" onclick="startApp()">เริ่มเรียนรู้</button>
     </div>
 
-    <!-- โหมด 1: ฝึกพิมพ์ทั่วไป & โหมด 2: แฟลชการ์ด -->
+    <!-- โหมด 1 & 2 -->
     <div id="practice-section" class="view-section">
         <div class="flashcard-display-container">
             <div class="fc-box">
                 <div class="fc-label">English</div>
                 <div class="word-display" id="targetWord">---</div>
-                <button class="btn-speaker" id="speakerBtn" onclick="replayAudio()" title="ฟังเสียง">🔊</button>
+                <button class="btn-speaker" onclick="replayAudio('en')" title="ฟังเสียงอังกฤษ">🔊</button>
             </div>
             <div class="fc-divider-line"></div>
             <div class="fc-box">
                 <div class="fc-label">Thai</div>
                 <div class="meaning-display" id="targetMeaning">---</div>
+                <button class="btn-speaker" onclick="replayAudio('th')" title="ฟังเสียงไทย">🔊</button>
             </div>
         </div>
         
@@ -428,7 +349,7 @@
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
-    <!-- โหมด 3: เกมจับคู่ -->
+    <!-- โหมด 3 -->
     <div id="matching-section" class="view-section">
         <h2>🧩 เกมจับคู่คำศัพท์</h2>
         <div class="score-info" id="setInfoText" style="font-weight:600; color:#2563eb; font-size:15px;">ชุดที่ 1 / 1</div>
@@ -448,7 +369,7 @@
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
-    <!-- โหมด 4: เกมจับเวลา Speed Vocab (เพิ่มใหม่) -->
+    <!-- โหมด 4 -->
     <div id="speed-section" class="view-section">
         <div class="speed-header">
             <div class="speed-timer" id="speedTimer">⏱️ 60s</div>
@@ -457,7 +378,6 @@
         </div>
 
         <div class="speed-word-box" id="speedTargetWord">---</div>
-
         <div class="speed-choices-grid" id="speedChoicesGrid"></div>
 
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
@@ -473,20 +393,26 @@
     let audioCtx = null;
     let isProcessingFc = false;
 
-    // สำหรับเกมจับคู่
-    let currentMatchSet = 0;
-    let totalMatchSets = 0;
-    const SET_SIZE = 6;
-    let selectedCards = [];
-    let matchedPairsCount = 0;
+    // สำหรับแมปปิ้งคีย์บอร์ด ENG -> THAI
+    const enToThMap = {
+        'q':'ๆ', 'w':'ไ', 'e':'ำ', 'r':'พ', 't':'ะ', 'y':'ั', 'u':'ี', 'i':'ร', 'o':'น', 'p':'ย', '[':'บ', ']':'ล', '\\':'ฃ',
+        'a':'ฟ', 's':'ห', 'd':'ก', 'f':'ด', 'g':'เ', 'h':'้', 'j':'่', 'k':'า', 'l':'ส', ';':'วง', '\'':'ง',
+        'z':'ผ', 'x':'ป', 'c':'แ', 'v':'อ', 'b':'ิ', 'n':'ื', 'm':'ท', ',':'ม', '.':'ใ', '/':'ฝ',
+        'Q':'0', 'W':'"', 'E':'🎨', 'R':'ฤ', 'T':'ธ', 'Y':'ํ', 'U':'๊', 'I':'ณ', 'O':'ฯ', 'P':'ญ', '{':'ฐ', '}':'ฅ', '|':'ฬ',
+        'A':'ฤ', 'S':'ฆ', 'D':'ฏ', 'F':'โ', 'G':'ฌ', 'H':'็', 'J':'๋', 'K':'ษ', 'L':'ศ', ':':'ซ', '"':'.',
+        'Z':'(' , 'X':')', 'C':'ฉ', 'V':'ฮ', 'B':'ฺ', 'N':'์', 'M':'?', '<':'ฒ', '>':'ฬ', '?':'ฦ'
+    };
 
-    // สำหรับเกม Speed Vocab (ใหม่)
-    let speedTimerInterval = null;
-    let speedTimeLeft = 60;
-    let speedScore = 0;
-    let speedCombo = 0;
-    let speedCurrentTarget = null;
-    let isSpeedLock = false;
+    function convertEnToTh(text) {
+        return text.split('').map(char => enToThMap[char] || char).join('');
+    }
+
+    // Match & Speed states
+    let currentMatchSet = 0, totalMatchSets = 0;
+    const SET_SIZE = 6;
+    let selectedCards = [], matchedPairsCount = 0;
+
+    let speedTimerInterval = null, speedTimeLeft = 60, speedScore = 0, speedCombo = 0, speedCurrentTarget = null, isSpeedLock = false;
 
     // Drag & Drop
     const dropArea = document.getElementById('dropArea');
@@ -539,14 +465,18 @@
     }
 
     function cleanString(str) {
-        return str.toLowerCase().replace(/\s+/g, ' ').trim();
+        return str.toLowerCase().replace(/\s+/g, '').trim();
     }
 
     function checkFlexibleAnswer(userInputStr, targetFullStr) {
         const cleanedUser = cleanString(userInputStr);
+        const convertedUser = cleanString(convertEnToTh(userInputStr));
         if (!cleanedUser) return false;
+
         const subAnswers = targetFullStr.split(/[/,;]/).map(s => cleanString(s));
-        return subAnswers.some(ans => ans === cleanedUser) || cleanString(targetFullStr) === cleanedUser;
+        return subAnswers.some(ans => ans === cleanedUser || ans === convertedUser) || 
+               cleanString(targetFullStr) === cleanedUser || 
+               cleanString(targetFullStr) === convertedUser;
     }
 
     function startApp() {
@@ -588,7 +518,6 @@
         }
     }
 
-    // --- โหมด 1 & 2: ฝึกพิมพ์ & แฟลชการ์ด ---
     function showPracticeOrFlashcardWord() {
         if (currentIndex >= wordList.length) {
             alert('🎉 ยินดีด้วย! คุณทำครบทุกคำเรียบร้อยแล้ว');
@@ -617,20 +546,21 @@
             } else if (practiceLang === 'th') {
                 inputField.placeholder = `พิมพ์ตามภาษาไทย (${item.meaning})`;
             } else {
-                inputField.placeholder = `พิมพ์อังกฤษแล้วตามด้วยไทย (${item.word} ${item.meaning.split(/[/,;]/)[0]})`;
+                inputField.placeholder = `พิมพ์ต่อเนื่องไม่ต้องสลับคีย์บอร์ด (${item.word}${item.meaning.split(/[/,;]/)[0]})`;
             }
-            speakWord(item.word);
+            speakWord(item.word, 'en');
 
         } else if (currentMode === 'flashcard') {
             if (fcDirection === 'en2th') {
                 document.getElementById('targetWord').innerText = item.word;
                 document.getElementById('targetMeaning').innerText = '???';
                 inputField.placeholder = "พิมพ์ทายคำแปลภาษาไทย...";
-                speakWord(item.word);
+                speakWord(item.word, 'en');
             } else {
                 document.getElementById('targetWord').innerText = '???';
                 document.getElementById('targetMeaning').innerText = item.meaning;
                 inputField.placeholder = "พิมพ์ทายคำศัพท์ภาษาอังกฤษ...";
+                speakWord(item.meaning, 'th');
             }
             checkBtn.style.display = 'block';
         }
@@ -641,7 +571,7 @@
         inputField.focus();
     }
 
-    // ฝึกพิมพ์ตาม Real-time
+    // ระบบตรวจการพิมพ์ Real-time
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
@@ -651,7 +581,7 @@
             const target = item.word;
             if (cleanString(val) === cleanString(target)) {
                 this.className = 'typing-input correct';
-                speakWord(target);
+                speakWord(target, 'en');
                 setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
             } else if (cleanString(target).startsWith(cleanString(val))) {
                 this.className = 'typing-input';
@@ -661,32 +591,29 @@
         } else if (practiceLang === 'th') {
             if (checkFlexibleAnswer(val, item.meaning)) {
                 this.className = 'typing-input correct';
-                speakWord(item.word);
+                speakWord(item.meaning, 'th');
                 setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
             } else {
-                const subAnswers = item.meaning.split(/[/,;]/).map(s => cleanString(s));
-                const isPartialMatch = subAnswers.some(ans => ans.startsWith(cleanString(val)));
-                if (isPartialMatch || cleanString(val) === '') {
-                    this.className = 'typing-input';
-                } else {
-                    this.className = 'typing-input incorrect';
-                }
+                this.className = 'typing-input';
             }
         } else if (practiceLang === 'both') {
             const cleanVal = cleanString(val);
             const cleanEn = cleanString(item.word);
+            const subMeanings = item.meaning.split(/[/,;]/).map(s => cleanString(s));
 
             if (cleanVal.startsWith(cleanEn)) {
-                const tailInput = cleanVal.slice(cleanEn.length).trim();
+                const tailInput = cleanVal.slice(cleanEn.length);
+                const convertedTail = cleanString(convertEnToTh(tailInput));
+
                 if (tailInput === '') {
                     this.className = 'typing-input';
-                } else if (checkFlexibleAnswer(tailInput, item.meaning)) {
+                } else if (subMeanings.some(m => m === tailInput || m === convertedTail)) {
                     this.className = 'typing-input correct';
-                    speakWord(item.word);
-                    setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
+                    speakWord(item.word, 'en');
+                    setTimeout(() => { speakWord(item.meaning, 'th'); }, 800);
+                    setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1200);
                 } else {
-                    const subAnswers = item.meaning.split(/[/,;]/).map(s => cleanString(s));
-                    const isPartialMatch = subAnswers.some(ans => ans.startsWith(tailInput));
+                    const isPartialMatch = subMeanings.some(m => m.startsWith(tailInput) || m.startsWith(convertedTail));
                     if (isPartialMatch) {
                         this.className = 'typing-input';
                     } else {
@@ -730,8 +657,9 @@
             inputField.className = 'typing-input correct';
             answerReveal.innerText = `✓ ถูกต้อง! (${targetAnswer})`;
             answerReveal.className = 'answer-reveal-box show-correct';
-            speakWord(item.word);
-            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1400);
+            speakWord(item.word, 'en');
+            setTimeout(() => { speakWord(item.meaning, 'th'); }, 800);
+            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1600);
         } else {
             inputField.className = 'typing-input incorrect';
             answerReveal.innerText = `✕ เฉลย: ${targetAnswer}`;
@@ -740,7 +668,7 @@
         }
     }
 
-    // --- โหมด 3: เกมจับคู่ ---
+    // --- โหมด 3: จับคู่ ---
     function initMatchingSet() {
         const grid = document.getElementById('matchingGrid');
         grid.innerHTML = '';
@@ -756,8 +684,8 @@
         let cardsData = [];
 
         gameItems.forEach((item, index) => {
-            cardsData.push({ id: index, text: item.word, type: 'en', englishWord: item.word });
-            cardsData.push({ id: index, text: item.meaning, type: 'th', englishWord: item.word });
+            cardsData.push({ id: index, text: item.word, type: 'en', englishWord: item.word, thaiWord: item.meaning });
+            cardsData.push({ id: index, text: item.meaning, type: 'th', englishWord: item.word, thaiWord: item.meaning });
         });
 
         cardsData = shuffleArray(cardsData);
@@ -769,6 +697,7 @@
             card.dataset.id = data.id;
             card.dataset.type = data.type;
             card.dataset.english = data.englishWord;
+            card.dataset.thai = data.thaiWord;
 
             card.onclick = () => selectCard(card, gameItems.length);
             grid.appendChild(card);
@@ -779,7 +708,9 @@
         if (card.classList.contains('selected') || card.classList.contains('matched')) return;
 
         if (card.dataset.type === 'en') {
-            speakWord(card.dataset.english);
+            speakWord(card.dataset.english, 'en');
+        } else {
+            speakWord(card.dataset.thai, 'th');
         }
 
         card.classList.add('selected');
@@ -788,7 +719,6 @@
         if (selectedCards.length === 2) {
             const [c1, c2] = selectedCards;
             if (c1.dataset.id === c2.dataset.id && c1.dataset.type !== c2.dataset.type) {
-                if (c1.dataset.type === 'th') speakWord(c1.dataset.english);
                 c1.classList.add('matched');
                 c2.classList.add('matched');
                 matchedPairsCount++;
@@ -815,7 +745,7 @@
         }
     }
 
-    // --- โหมด 4: เกมจับเวลา Speed Vocab (ใหม่) ---
+    // --- โหมด 4: Speed Vocab ---
     function startSpeedGame() {
         speedTimeLeft = 60;
         speedScore = 0;
@@ -847,7 +777,6 @@
 
         document.getElementById('speedTargetWord').innerText = speedCurrentTarget.word;
 
-        // สุ่มสร้าง 4 ตัวเลือก
         let choices = [speedCurrentTarget.meaning];
         let availableOtherWords = wordList.filter(w => w.word !== speedCurrentTarget.word);
         availableOtherWords = shuffleArray(availableOtherWords);
@@ -874,7 +803,7 @@
         if (isSpeedLock) return;
         isSpeedLock = true;
 
-        speakWord(speedCurrentTarget.word);
+        speakWord(speedCurrentTarget.word, 'en');
 
         const isCorrect = (selectedText === speedCurrentTarget.meaning);
 
@@ -888,7 +817,6 @@
             speedCombo = 0;
             speedScore = Math.max(0, speedScore - 50);
 
-            // ไฮไลต์ปุ่มที่ถูกต้อง
             const allBtns = document.querySelectorAll('.speed-choice-btn');
             allBtns.forEach(b => {
                 if (b.innerText === speedCurrentTarget.meaning) {
@@ -900,12 +828,10 @@
         document.getElementById('speedScore').innerText = `คะแนน: ${speedScore}`;
         document.getElementById('speedCombo').innerText = `Combo x${speedCombo}`;
 
-        setTimeout(() => {
-            nextSpeedQuestion();
-        }, isCorrect ? 400 : 1000);
+        setTimeout(() => { nextSpeedQuestion(); }, isCorrect ? 400 : 1000);
     }
 
-    // --- ระบบควบคุมเสียง ---
+    // --- ระบบเล่นเสียงอ่านทั้ง TH & EN ---
     function updateAudioSettings() {
         const vol = document.getElementById('volumeRange').value;
         const rate = document.getElementById('rateRange').value;
@@ -913,7 +839,7 @@
         document.getElementById('rateVal').innerText = rate + 'x';
     }
 
-    function speakWord(text) {
+    function speakWord(text, lang = 'en') {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
             
@@ -921,7 +847,7 @@
             const rateSetting = parseFloat(document.getElementById('rateRange').value);
 
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
+            utterance.lang = (lang === 'th') ? 'th-TH' : 'en-US';
             utterance.volume = Math.min(volSetting, 1.0);
             utterance.rate = rateSetting;
 
@@ -934,9 +860,13 @@
         }
     }
 
-    function replayAudio() {
+    function replayAudio(type) {
         if (wordList.length > 0 && currentIndex < wordList.length) {
-            speakWord(wordList[currentIndex].word);
+            if (type === 'en') {
+                speakWord(wordList[currentIndex].word, 'en');
+            } else {
+                speakWord(wordList[currentIndex].meaning, 'th');
+            }
             document.getElementById('userInput').focus();
         }
     }
