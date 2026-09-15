@@ -340,6 +340,14 @@
             <label><input type="radio" name="wordOrder" value="random"> 🔀 เรียงแบบสุ่มคำศัพท์</label>
         </div>
 
+        <!-- เพิ่มการตั้งค่าภาษาการอ่านออกเสียง -->
+        <div class="section-title">3. ภาษาที่ต้องการให้อ่านออกเสียง</div>
+        <div class="options-grid three-cols">
+            <label><input type="radio" name="audioVoiceSetting" value="both" checked> 🔊 อ่านทั้งสองภาษา</label>
+            <label><input type="radio" name="audioVoiceSetting" value="en_only"> 🇬🇧 อ่านเฉพาะอังกฤษ</label>
+            <label><input type="radio" name="audioVoiceSetting" value="none"> 🔇 ปิดการอ่านออกเสียง</label>
+        </div>
+
         <button class="btn-primary" onclick="startApp()">เริ่มเรียนรู้</button>
     </div>
 
@@ -438,6 +446,7 @@
     let fcDirection = 'en2th';
     let listenDirection = 'th2en';
     let practiceLang = 'en'; 
+    let audioVoiceSetting = 'both';
     let isProcessingFc = false;
     let isProcessingListen = false;
 
@@ -496,7 +505,6 @@
         lines.forEach(line => {
             const trimmed = line.trim();
             if (!trimmed) return;
-            // แก้ไขจุดที่ 1: ตัด - ออกจากกลุ่มตัวคั่น เพื่อไม่ให้คำภาษาอังกฤษที่มีขีด (- ) โดนตัดแหว่ง
             const splitMatch = trimmed.match(/^([A-Za-z0-9\s'-]+)[=:\t,–—]\s*(.+)$/);
             if (splitMatch) {
                 parsedResults.push({ word: splitMatch[1].trim(), meaning: splitMatch[2].trim() });
@@ -550,6 +558,7 @@
         practiceLang = document.querySelector('input[name="practiceLang"]:checked').value;
         fcDirection = document.querySelector('input[name="fcDirection"]:checked').value;
         listenDirection = document.querySelector('input[name="listenDirection"]:checked').value;
+        audioVoiceSetting = document.querySelector('input[name="audioVoiceSetting"]:checked').value;
         const isRandom = document.querySelector('input[name="wordOrder"]:checked').value === 'random';
 
         if (isRandom) wordList = shuffleArray(wordList);
@@ -672,8 +681,10 @@
         if (practiceLang === 'en') {
             if (cleanString(val) === cleanString(item.word)) {
                 this.className = 'typing-input correct';
-                speakWord(item.word, 'en');
-                setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
+                speakWord(item.word, 'en', () => {
+                    currentIndex++;
+                    showPracticeOrFlashcardWord();
+                });
             } else if (cleanString(item.word).startsWith(cleanString(val))) {
                 this.className = 'typing-input';
             } else {
@@ -682,8 +693,10 @@
         } else if (practiceLang === 'th') {
             if (checkFlexibleAnswer(val, item.meaning)) {
                 this.className = 'typing-input correct';
-                speakWord(item.meaning, 'th');
-                setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 600);
+                speakWord(item.meaning, 'th', () => {
+                    currentIndex++;
+                    showPracticeOrFlashcardWord();
+                });
             } else {
                 this.className = 'typing-input';
             }
@@ -699,9 +712,12 @@
                     this.className = 'typing-input';
                 } else if (subMeanings.some(m => m === tailInput)) {
                     this.className = 'typing-input correct';
-                    speakWord(item.word, 'en');
-                    setTimeout(() => { speakWord(item.meaning, 'th'); }, 800);
-                    setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1200);
+                    speakWord(item.word, 'en', () => {
+                        speakWord(item.meaning, 'th', () => {
+                            currentIndex++;
+                            showPracticeOrFlashcardWord();
+                        });
+                    });
                 } else if (subMeanings.some(m => m.startsWith(tailInput))) {
                     this.className = 'typing-input';
                 } else {
@@ -751,9 +767,13 @@
             inputField.className = 'typing-input correct';
             answerReveal.innerText = `✓ ถูกต้อง! (${targetAnswer})`;
             answerReveal.className = 'answer-reveal-box show-correct';
-            speakWord(item.word, 'en');
-            setTimeout(() => { speakWord(item.meaning, 'th'); }, 800);
-            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 1600);
+            
+            speakWord(item.word, 'en', () => {
+                speakWord(item.meaning, 'th', () => {
+                    currentIndex++;
+                    showPracticeOrFlashcardWord();
+                });
+            });
         } else {
             inputField.className = 'typing-input incorrect';
             answerReveal.innerText = `✕ เฉลย: ${targetAnswer}`;
@@ -779,7 +799,6 @@
         document.getElementById('progressBarListen').style.width = progressPercent + '%';
         document.getElementById('progressTextListen').innerText = `คำที่ ${currentIndex + 1} / ${wordList.length}`;
 
-        // แก้ไขจุดที่ 5: สุ่มคำตอบมาแสดง 4 ตัวเลือก (1 ตัวเลือกที่ถูก + 3 ตัวเลือกหลอก)
         const correctTarget = (listenDirection === 'th2en') ? item.word : item.meaning;
         let otherItems = wordList.filter((_, idx) => idx !== currentIndex);
         otherItems = shuffleArray(otherItems);
@@ -805,9 +824,9 @@
         if (wordList.length === 0 || currentIndex >= wordList.length) return;
         const item = wordList[currentIndex];
         if (listenDirection === 'th2en') {
-            speakWord(item.meaning, 'th');
+            speakWord(item.meaning, 'th', null, true);
         } else {
-            speakWord(item.word, 'en');
+            speakWord(item.word, 'en', null, true);
         }
     }
 
@@ -820,9 +839,12 @@
 
         if (isCorrect) {
             selectedBtn.classList.add('correct-choice');
-            speakWord(item.word, 'en');
-            setTimeout(() => { speakWord(item.meaning, 'th'); }, 800);
-            setTimeout(() => { currentIndex++; showListeningQuestion(); }, 1600);
+            speakWord(item.word, 'en', () => {
+                speakWord(item.meaning, 'th', () => {
+                    currentIndex++;
+                    showListeningQuestion();
+                });
+            });
         } else {
             selectedBtn.classList.add('incorrect-choice');
             const allBtns = document.querySelectorAll('.listen-choice-btn');
@@ -875,9 +897,9 @@
         if (card.classList.contains('selected') || card.classList.contains('matched')) return;
 
         if (card.dataset.type === 'en') {
-            speakWord(card.dataset.english, 'en');
+            speakWord(card.dataset.english, 'en', null, true);
         } else {
-            speakWord(card.dataset.thai, 'th');
+            speakWord(card.dataset.thai, 'th', null, true);
         }
 
         card.classList.add('selected');
@@ -970,7 +992,7 @@
         if (isSpeedLock) return;
         isSpeedLock = true;
 
-        speakWord(speedCurrentTarget.word, 'en');
+        speakWord(speedCurrentTarget.word, 'en', null, true);
 
         const isCorrect = (selectedText === speedCurrentTarget.meaning);
 
@@ -1013,38 +1035,54 @@
         }
     }
 
-    function speakWord(text, lang = 'en') {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            
-            // แก้ไขจุดที่ 4: อ่านค่า volume และ rate ตามโหมดปัจจุบันที่เปิดใช้งานอยู่
-            let volSetting = 1.0;
-            let rateSetting = 0.9;
-
-            if (currentMode === 'matching') {
-                volSetting = parseFloat(document.getElementById('volumeRangeMatch').value);
-                rateSetting = parseFloat(document.getElementById('rateRangeMatch').value);
-            } else {
-                volSetting = parseFloat(document.getElementById('volumeRange').value);
-                rateSetting = parseFloat(document.getElementById('rateRange').value);
-            }
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = (lang === 'th') ? 'th-TH' : 'en-US';
-            // แก้ไขจุดที่ 3: ใช้ SpeechSynthesisUtterance volume (0.0 ถึง 1.0) อย่างถูกต้อง
-            utterance.volume = Math.max(0.0, Math.min(volSetting, 1.0));
-            utterance.rate = rateSetting;
-
-            window.speechSynthesis.speak(utterance);
+    function speakWord(text, lang = 'en', onEndCallback = null, forcePlay = false) {
+        if (!('speechSynthesis' in window)) {
+            if (onEndCallback) onEndCallback();
+            return;
         }
+
+        // เช็คการตั้งค่าภาษาการอ่านออกเสียง
+        if (!forcePlay) {
+            if (audioVoiceSetting === 'none') {
+                if (onEndCallback) onEndCallback();
+                return;
+            }
+            if (audioVoiceSetting === 'en_only' && lang === 'th') {
+                if (onEndCallback) onEndCallback();
+                return;
+            }
+        }
+
+        let volSetting = 1.0;
+        let rateSetting = 0.9;
+
+        if (currentMode === 'matching') {
+            volSetting = parseFloat(document.getElementById('volumeRangeMatch').value);
+            rateSetting = parseFloat(document.getElementById('rateRangeMatch').value);
+        } else {
+            volSetting = parseFloat(document.getElementById('volumeRange').value);
+            rateSetting = parseFloat(document.getElementById('rateRange').value);
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = (lang === 'th') ? 'th-TH' : 'en-US';
+        utterance.volume = Math.max(0.0, Math.min(volSetting, 1.0));
+        utterance.rate = rateSetting;
+
+        if (onEndCallback) {
+            utterance.onend = () => { onEndCallback(); };
+            utterance.onerror = () => { onEndCallback(); };
+        }
+
+        window.speechSynthesis.speak(utterance);
     }
 
     function replayAudio(type) {
         if (wordList.length > 0 && currentIndex < wordList.length) {
             if (type === 'en') {
-                speakWord(wordList[currentIndex].word, 'en');
+                speakWord(wordList[currentIndex].word, 'en', null, true);
             } else {
-                speakWord(wordList[currentIndex].meaning, 'th');
+                speakWord(wordList[currentIndex].meaning, 'th', null, true);
             }
             document.getElementById('userInput').focus();
         }
@@ -1052,6 +1090,7 @@
 
     function resetApp() {
         if (speedTimerInterval) clearInterval(speedTimerInterval);
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         document.getElementById('setup-section').style.display = 'block';
         document.getElementById('practice-section').style.display = 'none';
         document.getElementById('listening-section').style.display = 'none';
