@@ -340,7 +340,6 @@
             <label><input type="radio" name="wordOrder" value="random"> 🔀 เรียงแบบสุ่มคำศัพท์</label>
         </div>
 
-        <!-- เพิ่มการตั้งค่าภาษาการอ่านออกเสียง -->
         <div class="section-title">3. ภาษาที่ต้องการให้อ่านออกเสียง</div>
         <div class="options-grid three-cols">
             <label><input type="radio" name="audioVoiceSetting" value="both" checked> 🔊 อ่านทั้งสองภาษา</label>
@@ -463,7 +462,13 @@
     const thToEnMap = {};
     for (let key in enToThMap) { thToEnMap[enToThMap[key]] = key; }
 
-    function convertChar(char, targetLang) {
+    function convertChar(char, targetLang, targetExpectedStr = '', currentPos = 0) {
+        // หากตัวอักษรที่พิมพ์ ตรงกับตัวอักษรของคำเฉลยในตำแหน่งนั้นอยู่แล้ว ไม่ต้องทำการแปลงภาษา
+        if (targetExpectedStr && currentPos < targetExpectedStr.length) {
+            const expectedChar = targetExpectedStr[currentPos];
+            if (char === expectedChar) return char;
+        }
+
         if (targetLang === 'th') return enToThMap[char] || char;
         if (targetLang === 'en') return thToEnMap[char] || char;
         return char;
@@ -637,37 +642,49 @@
         inputField.focus();
     }
 
-    // --- ระบบพิมพ์อัตโนมัติ Real-time Keyboard ---
+    // --- ระบบพิมพ์อัตโนมัติ Real-time Keyboard (ปรับปรุงแก้ไขการบล็อกเครื่องหมาย) ---
     document.getElementById('userInput').addEventListener('beforeinput', function(e) {
         if (!e.data) return;
 
         const item = wordList[currentIndex];
         const currentVal = this.value;
+        const cursorStart = this.selectionStart;
         let expectedLang = 'en';
+        let targetExpectedStr = '';
 
         if (currentMode === 'practice') {
-            if (practiceLang === 'en') expectedLang = 'en';
-            else if (practiceLang === 'th') expectedLang = 'th';
-            else if (practiceLang === 'both') {
-                expectedLang = (cleanString(currentVal).length < cleanString(item.word).length) ? 'en' : 'th';
+            if (practiceLang === 'en') {
+                expectedLang = 'en';
+                targetExpectedStr = item.word;
+            } else if (practiceLang === 'th') {
+                expectedLang = 'th';
+                targetExpectedStr = item.meaning;
+            } else if (practiceLang === 'both') {
+                if (cleanString(currentVal).length < cleanString(item.word).length) {
+                    expectedLang = 'en';
+                    targetExpectedStr = item.word;
+                } else {
+                    expectedLang = 'th';
+                    targetExpectedStr = item.meaning;
+                }
             }
         } else if (currentMode === 'flashcard') {
             expectedLang = (fcDirection === 'en2th') ? 'th' : 'en';
+            targetExpectedStr = (fcDirection === 'en2th') ? item.meaning : item.word;
         } else {
             return;
         }
 
         let convertedData = '';
-        for (let char of e.data) {
-            convertedData += convertChar(char, expectedLang);
+        for (let i = 0; i < e.data.length; i++) {
+            convertedData += convertChar(e.data[i], expectedLang, targetExpectedStr, cursorStart + i);
         }
 
         if (convertedData !== e.data) {
             e.preventDefault();
-            const start = this.selectionStart;
             const end = this.selectionEnd;
-            this.value = this.value.substring(0, start) + convertedData + this.value.substring(end);
-            this.setSelectionRange(start + convertedData.length, start + convertedData.length);
+            this.value = this.value.substring(0, cursorStart) + convertedData + this.value.substring(end);
+            this.setSelectionRange(cursorStart + convertedData.length, cursorStart + convertedData.length);
             this.dispatchEvent(new Event('input'));
         }
     });
@@ -1041,7 +1058,6 @@
             return;
         }
 
-        // เช็คการตั้งค่าภาษาการอ่านออกเสียง
         if (!forcePlay) {
             if (audioVoiceSetting === 'none') {
                 if (onEndCallback) onEndCallback();
