@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ศูนย์การเรียนรู้คำศัพท์ Pro (Vocab Mastery)</title>
-    <!-- SheetJS สำหรับอ่านไฟล์ Excel (.xlsx, .xls, .csv) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -49,7 +48,6 @@
         h1 { text-align: center; color: var(--text-main); font-size: 26px; margin: 0 0 6px 0; font-weight: 700; }
         p.subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin: 0 0 24px 0; }
 
-        /* File Drop Area */
         .file-drop-area {
             border: 2px dashed #c7d2fe;
             border-radius: 16px;
@@ -104,7 +102,6 @@
 
         .view-section { display: none; text-align: center; }
 
-        /* Flashcard display */
         .flashcard-display-container {
             display: flex; align-items: center; justify-content: center; gap: 15px;
             background: #f8fafc; border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 20px;
@@ -112,7 +109,7 @@
         .fc-box { flex: 1; display: flex; flex-direction: column; align-items: center; }
         .fc-divider-line { width: 1px; height: 60px; background-color: var(--border-color); }
         .fc-label { font-size: 11px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .word-display { font-size: 26px; font-weight: 700; color: var(--text-main); word-break: break-word; }
+        .word-display { font-size: 24px; font-weight: 700; color: var(--text-main); word-break: break-word; }
         .meaning-display { font-size: 22px; color: var(--text-muted); font-weight: 600; word-break: break-word; }
 
         .btn-speaker {
@@ -167,7 +164,6 @@
         .progress-bar { height: 100%; background-color: var(--primary); width: 0%; transition: width 0.3s ease; }
         .score-info { margin-top: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
 
-        /* Speed mode */
         .speed-header {
             display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc;
             border: 1px solid var(--border-color); border-radius: 14px; padding: 12px 20px; margin-bottom: 20px;
@@ -178,7 +174,7 @@
 
         .speed-word-box {
             background-color: var(--primary-light); border: 2px solid #c7d2fe; border-radius: 16px;
-            padding: 24px; font-size: 30px; font-weight: 700; color: var(--primary); margin-bottom: 20px;
+            padding: 24px; font-size: 26px; font-weight: 700; color: var(--primary); margin-bottom: 20px;
         }
 
         .speed-choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -190,7 +186,6 @@
         .speed-choice-btn.correct-btn { background-color: var(--success-bg) !important; border-color: var(--success) !important; color: #065f46 !important; }
         .speed-choice-btn.incorrect-btn { background-color: var(--danger-bg) !important; border-color: var(--danger) !important; color: #991b1b !important; }
 
-        /* Scoreboard Modal */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
@@ -223,7 +218,7 @@
         </div>
 
         <div class="divider">หรือวางข้อความคำศัพท์โดยตรง</div>
-        <textarea id="wordInput" placeholder="ice-cream = ไอศกรีม&#10;good-looking = หน้าตาดี&#10;lawsuit = การฟ้องร้อง / คดีความ"></textarea>
+        <textarea id="wordInput" placeholder="District Court / Kwaeng Court = ศาลแขวง&#10;ice-cream = ไอศกรีม&#10;lawsuit = การฟ้องร้อง / คดีความ"></textarea>
 
         <div class="section-title">1. เลือกโหมดการเรียนรู้</div>
         <div class="options-grid">
@@ -392,7 +387,6 @@
     let isProcessingListen = false;
     let correctCount = 0;
 
-    // ตารางแปลงภาษา Eng <-> Thai ตามแป้นพิมพ์ Kedmanee Standard
     const enToThMap = {
         'q':'ๆ', 'w':'ไ', 'e':'ำ', 'r':'พ', 't':'ะ', 'y':'ั', 'u':'ี', 'i':'ร', 'o':'น', 'p':'ย',
         'a':'ฟ', 's':'ห', 'd':'ก', 'f':'ด', 'g':'เ', 'h':'้', 'j':'่', 'k':'า', 'l':'ส',
@@ -417,14 +411,12 @@
         return char;
     }
 
-    // Matching & Speed States
     let currentMatchSet = 0, totalMatchSets = 0;
     const SET_SIZE = 6;
     let selectedCards = [], matchedPairsCount = 0;
 
     let speedTimerInterval = null, speedTimeLeft = 60, speedScore = 0, speedCombo = 0, speedCurrentTarget = null, isSpeedLock = false;
 
-    // Drag and drop & File Parsing (รองรับ Excel .xlsx, .xls, .csv, .txt)
     const dropArea = document.getElementById('dropArea');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, preventDefaults, false));
     function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
@@ -480,14 +472,34 @@
         lines.forEach(line => {
             const trimmed = line.trim();
             if (!trimmed) return;
-            const splitMatch = trimmed.match(/^([A-Za-z0-9\s'-]+)[=:\t,–—]\s*(.+)$/);
+
+            // 1. แยกด้วยเครื่องหมายคั่น เช่น =, :, tab, –, —
+            const splitMatch = trimmed.match(/^(.+?)\s*[:=\t–—]\s*(.+)$/);
             if (splitMatch) {
-                parsedResults.push({ word: splitMatch[1].trim(), meaning: splitMatch[2].trim() });
+                parsedResults.push({
+                    word: splitMatch[1].trim(),
+                    meaning: splitMatch[2].trim()
+                });
                 return;
             }
-            const autoMatch = trimmed.match(/^([A-Za-z0-9\s'-]+)\s+(.+)$/);
-            if (autoMatch) {
-                parsedResults.push({ word: autoMatch[1].trim(), meaning: autoMatch[2].trim() });
+
+            // 2. กรณีไม่มีเครื่องหมายคั่น แต่แยกด้วยภาษา (อังกฤษ/สัญลักษณ์ -> ภาษาไทย)
+            const thaiMatch = trimmed.match(/^([A-Za-z0-9\s'\-\/(),.&]+?)\s*([\u0E00-\u0E7F].*)$/);
+            if (thaiMatch) {
+                parsedResults.push({
+                    word: thaiMatch[1].trim(),
+                    meaning: thaiMatch[2].trim()
+                });
+                return;
+            }
+
+            // 3. กรณีแยกด้วยเว้นวรรคทั่วไป
+            const spaceMatch = trimmed.match(/^(\S+)\s+(.+)$/);
+            if (spaceMatch) {
+                parsedResults.push({
+                    word: spaceMatch[1].trim(),
+                    meaning: spaceMatch[2].trim()
+                });
             }
         });
         return parsedResults;
@@ -616,7 +628,6 @@
         inputField.focus();
     }
 
-    // Keyboard Live Transformation Fix
     document.getElementById('userInput').addEventListener('beforeinput', function(e) {
         if (!e.data) return;
 
@@ -657,14 +668,13 @@
         }
     });
 
-    // Real-time verification for Practice Mode
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
         const val = e.target.value;
 
         if (practiceLang === 'en') {
-            if (cleanString(val) === cleanString(item.word)) {
+            if (checkFlexibleAnswer(val, item.word)) {
                 this.className = 'typing-input correct';
                 speakWord(item.word, 'en', () => { currentIndex++; showPracticeOrFlashcardWord(); });
             } else if (cleanString(item.word).startsWith(cleanString(val))) {
@@ -717,7 +727,10 @@
         const inputField = document.getElementById('userInput');
         const answerReveal = document.getElementById('answerReveal');
 
-        let isCorrect = (fcDirection === 'en2th') ? checkFlexibleAnswer(val, item.meaning) : (cleanString(val) === cleanString(item.word));
+        let isCorrect = (fcDirection === 'en2th') 
+            ? checkFlexibleAnswer(val, item.meaning) 
+            : checkFlexibleAnswer(val, item.word);
+
         let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
 
         isProcessingFc = true;
@@ -740,7 +753,6 @@
         }
     }
 
-    // --- Listening Mode ---
     function showListeningQuestion() {
         if (currentIndex >= wordList.length) {
             const pct = Math.round((correctCount / wordList.length) * 100);
@@ -809,7 +821,6 @@
         }
     }
 
-    // --- Matching Mode ---
     function initMatchingSet() {
         const grid = document.getElementById('matchingGrid');
         grid.innerHTML = '';
@@ -874,7 +885,6 @@
         }
     }
 
-    // --- Speed Mode ---
     function startSpeedGame() {
         speedTimeLeft = 60; speedScore = 0; speedCombo = 0; isSpeedLock = false;
 
@@ -951,7 +961,6 @@
         setTimeout(() => { nextSpeedQuestion(); }, isCorrect ? 400 : 1000);
     }
 
-    // --- Audio System ---
     function updateAudioSettings(modeContext) {
         if (modeContext === 'matching') {
             const vol = document.getElementById('volumeRangeMatch').value;
@@ -997,7 +1006,6 @@
         }
     }
 
-    // --- Score Storage & Modal System ---
     function saveScore(mode, score) {
         const currentHigh = parseInt(localStorage.getItem(`vocab_score_${mode}`) || '0', 10);
         if (score > currentHigh) {
