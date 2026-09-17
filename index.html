@@ -3,28 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเรียนรู้และฝึกพิมพ์คำศัพท์ภาษาอังกฤษ Pro</title>
-    <!-- SheetJS สำหรับอ่านไฟล์ Excel (.xlsx, .xls) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <title>ระบบเรียนรู้และฝึกพิมพ์คำศัพท์ภาษาอังกฤษ</title>
     <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-main: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', Prompt, sans-serif; }
-        
+        * { box-sizing: border-box; }
         body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
+            font-family: 'Segoe UI', Prompt, Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -32,63 +16,60 @@
             margin: 0;
             padding: 20px;
         }
-
         .container {
-            background-color: var(--card-bg);
-            padding: 32px;
-            border-radius: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             width: 100%;
-            max-width: 680px;
-            border: 1px solid var(--border-color);
+            max-width: 650px;
         }
-
-        h1 { text-align: center; color: var(--text-main); font-size: 26px; font-weight: 700; margin: 0 0 6px 0; }
-        p.subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin: 0 0 24px 0; }
-
-        /* Drag & Drop */
+        h1 { text-align: center; color: #1e293b; font-size: 24px; margin-bottom: 8px; }
+        p.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-top: 0; margin-bottom: 20px; }
         .file-drop-area {
-            border: 2px dashed #c7d2fe;
-            border-radius: 14px;
-            padding: 24px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
             text-align: center;
-            background-color: #f5f3ff;
+            background-color: #f8fafc;
             cursor: pointer;
             transition: all 0.2s ease;
-            margin-bottom: 16px;
+            margin-bottom: 15px;
         }
-        .file-drop-area:hover, .file-drop-area.dragover {
-            border-color: var(--primary);
-            background-color: #eee0ff;
-        }
-        .file-drop-icon { font-size: 32px; margin-bottom: 8px; }
-        .file-drop-text { color: #4338ca; font-size: 14px; font-weight: 500; }
-
+        .file-drop-area:hover, .file-drop-area.dragover { border-color: #3b82f6; background-color: #eff6ff; }
+        .file-drop-icon { font-size: 28px; color: #64748b; margin-bottom: 6px; }
+        .file-drop-text { color: #475569; font-size: 13px; }
         .divider {
             text-align: center;
-            margin: 18px 0;
-            color: var(--text-muted);
-            font-size: 13px;
+            margin: 15px 0;
+            color: #94a3b8;
+            font-size: 12px;
             position: relative;
         }
         .divider::before, .divider::after {
-            content: ""; position: absolute; top: 50%; width: 40%; height: 1px; background-color: var(--border-color);
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background-color: #e2e8f0;
         }
-        .divider::before { left: 0; } .divider::after { right: 0; }
-
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        
         textarea {
             width: 100%;
-            height: 90px;
-            padding: 12px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
+            height: 100px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             font-size: 14px;
+            resize: vertical;
             outline: none;
-            transition: border 0.2s;
         }
-        textarea:focus { border-color: var(--primary); }
+        textarea:focus { border-color: #3b82f6; }
 
-        .section-title { font-size: 14px; font-weight: 600; color: #334155; margin: 18px 0 8px 0; }
+        .section-title { font-size: 14px; font-weight: 600; color: #334155; margin-top: 15px; margin-bottom: 8px; }
 
         .options-grid {
             display: grid;
@@ -96,8 +77,8 @@
             gap: 10px;
             background-color: #f8fafc;
             padding: 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
         }
         .options-grid.three-cols { grid-template-columns: 1fr 1fr 1fr; }
         .options-grid label {
@@ -113,69 +94,58 @@
         .btn-primary {
             width: 100%;
             padding: 14px;
-            background-color: var(--primary);
+            background-color: #2563eb;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.2s, transform 0.1s;
+            margin-top: 15px;
+            transition: background 0.2s;
         }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-primary:active { transform: scale(0.99); }
-
+        .btn-primary:hover { background-color: #1d4ed8; }
+        
         .btn-secondary {
             background-color: #64748b;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 10px 20px;
             font-size: 14px;
             cursor: pointer;
-            margin-top: 18px;
-            transition: background 0.2s;
+            margin-top: 20px;
         }
         .btn-secondary:hover { background-color: #475569; }
 
-        .btn-history {
-            background-color: #f1f5f9;
-            color: #334155;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-        .btn-history:hover { background-color: #e2e8f0; }
-
         .view-section { display: none; text-align: center; }
 
-        /* Display Cards */
         .flashcard-display-container {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 15px;
             background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 24px;
-            margin-bottom: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
         }
-        .fc-box { flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .fc-divider-line { width: 1px; height: 60px; background-color: var(--border-color); }
-        .fc-label { font-size: 11px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
-        .word-display { font-size: 26px; font-weight: 700; color: var(--text-main); }
-        .meaning-display { font-size: 22px; color: #334155; font-weight: 600; }
+        .fc-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .fc-divider-line { width: 2px; height: 60px; background-color: #cbd5e1; }
+        .fc-label { font-size: 12px; color: #94a3b8; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; }
+        .word-display { font-size: 26px; font-weight: 700; color: #0f172a; }
+        .meaning-display { font-size: 22px; color: #475569; font-weight: 600; }
         
         .btn-speaker {
             background: #ffffff;
-            border: 1px solid var(--border-color);
+            border: 1px solid #cbd5e1;
             border-radius: 50%;
             width: 36px;
             height: 36px;
@@ -184,118 +154,151 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-top: 8px;
+            margin-top: 6px;
             transition: all 0.2s;
         }
-        .btn-speaker:hover { background-color: #f1f5f9; transform: scale(1.05); }
+        .btn-speaker:hover { background-color: #e2e8f0; transform: scale(1.05); }
 
         .btn-speaker-large {
-            width: 76px; height: 76px; font-size: 32px; border-radius: 50%;
-            background-color: var(--primary); color: white; border: none; cursor: pointer;
-            margin: 15px auto; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3); transition: all 0.2s;
+            width: 70px;
+            height: 70px;
+            font-size: 32px;
+            border-radius: 50%;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s;
         }
-        .btn-speaker-large:hover { transform: scale(1.06); }
+        .btn-speaker-large:hover { transform: scale(1.08); background-color: #1d4ed8; }
 
         input[type="text"].typing-input {
             font-size: 20px;
-            padding: 12px;
+            padding: 10px;
             width: 90%;
             text-align: center;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
+            border: 2px solid #94a3b8;
+            border-radius: 10px;
             outline: none;
-            transition: all 0.2s;
         }
-        .correct { border-color: var(--success) !important; background-color: #ecfdf5 !important; }
-        .incorrect { border-color: var(--danger) !important; background-color: #fef2f2 !important; }
+        .correct { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
+        .incorrect { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
 
-        .answer-reveal-box { margin-top: 10px; font-size: 15px; font-weight: 600; min-height: 24px; }
-        .answer-reveal-box.show-correct { color: var(--success); }
-        .answer-reveal-box.show-incorrect { color: var(--danger); }
+        .answer-reveal-box {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            min-height: 28px;
+            transition: all 0.2s ease;
+        }
+        .answer-reveal-box.show-correct { color: #16a34a; }
+        .answer-reveal-box.show-incorrect { color: #dc2626; }
 
         .audio-controls {
-            background-color: #f8fafc; border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 12px; margin-top: 16px;
-            display: flex; justify-content: space-around; align-items: center;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
         }
-        .control-group { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
-        .control-group input[type="range"] { width: 80px; cursor: pointer; }
+        .control-group { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; font-weight: 500; }
+        .control-group input[type="range"] { width: 90px; cursor: pointer; }
 
         .matching-grid, .listening-choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .listening-choices-grid { max-height: 350px; overflow-y: auto; padding: 5px; }
         
-        .match-card, .listen-choice-btn, .speed-choice-btn {
-            background-color: #ffffff;
-            border: 2px solid var(--border-color);
-            border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600;
-            color: var(--text-main); cursor: pointer; transition: all 0.15s ease;
-            display: flex; align-items: center; justify-content: center; min-height: 52px;
+        .match-card, .listen-choice-btn {
+            background-color: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
         }
-        .match-card:hover, .listen-choice-btn:hover, .speed-choice-btn:hover {
-            border-color: var(--primary); background-color: #f5f3ff;
-        }
-        .match-card.selected { border-color: var(--primary); background-color: #e0e7ff; color: #3730a3; }
+        .match-card:hover, .listen-choice-btn:hover { border-color: #3b82f6; background-color: #eff6ff; }
+        .match-card.selected { border-color: #2563eb; background-color: #dbeafe; color: #1e40af; }
         .match-card.matched { visibility: hidden; opacity: 0; pointer-events: none; }
         
-        .correct-choice, .speed-choice-btn.correct-btn { background-color: #dcfce7 !important; border-color: var(--success) !important; color: #15803d !important; }
-        .incorrect-choice, .speed-choice-btn.incorrect-btn { background-color: #fee2e2 !important; border-color: var(--danger) !important; color: #b91c1c !important; }
+        .listen-choice-btn.correct-choice { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+        .listen-choice-btn.incorrect-choice { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
 
-        .progress-bar-container { width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px; margin-top: 18px; overflow: hidden; }
-        .progress-bar { height: 100%; background-color: var(--primary); width: 0%; transition: width 0.3s ease; }
-        .score-info { margin-top: 8px; font-size: 13px; color: var(--text-muted); }
+        .progress-bar-container { width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px; margin-top: 15px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: #2563eb; width: 0%; transition: width 0.3s ease; }
+        .score-info { margin-top: 8px; font-size: 13px; color: #64748b; }
 
-        /* Speed Game UI */
         .speed-header {
-            display: flex; justify-content: space-between; align-items: center;
-            background-color: #f8fafc; border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 12px 20px; margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
         }
-        .speed-timer { font-size: 20px; font-weight: 700; color: var(--danger); }
-        .speed-score { font-size: 18px; font-weight: 700; color: var(--primary); }
-        .speed-combo { font-size: 14px; font-weight: 600; color: var(--success); }
+        .speed-timer { font-size: 20px; font-weight: 700; color: #dc2626; }
+        .speed-score { font-size: 18px; font-weight: 700; color: #2563eb; }
+        .speed-combo { font-size: 14px; font-weight: 600; color: #16a34a; }
 
         .speed-word-box {
-            background-color: #eff6ff; border: 2px solid #bfdbfe;
-            border-radius: 14px; padding: 24px; font-size: 32px; font-weight: 700;
-            color: #1e40af; margin-bottom: 20px;
+            background-color: #eff6ff;
+            border: 2px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 25px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 20px;
         }
 
-        /* Leaderboard Modal */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);
-            justify-content: center; align-items: center; z-index: 100;
+        .speed-choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .speed-choice-btn {
+            background-color: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
         }
-        .modal-content {
-            background-color: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 450px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: left;
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .modal-title { font-size: 18px; font-weight: 700; }
-        .close-btn { font-size: 20px; cursor: pointer; border: none; background: none; color: var(--text-muted); }
-        .history-list { max-height: 260px; overflow-y: auto; margin-bottom: 15px; }
-        .history-item {
-            display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);
-            font-size: 13px;
-        }
+        .speed-choice-btn:hover { border-color: #3b82f6; background-color: #f0f7ff; }
+        .speed-choice-btn.correct-btn { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+        .speed-choice-btn.incorrect-btn { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- หน้าตั้งค่าหลัก -->
     <div id="setup-section">
-        <h1>ศูนย์การเรียนรู้คำศัพท์ Web App Pro</h1>
-        <p class="subtitle">รองรับการอัปโหลดไฟล์ Excel (.xlsx), CSV, TXT หรือพิมพ์คำศัพท์</p>
+        <h1>ศูนย์การเรียนรู้คำศัพท์ Web App</h1>
+        <p class="subtitle">อัปโหลดไฟล์ หรือกรอกคำศัพท์เพื่อเริ่มเรียนรู้</p>
 
         <div class="file-drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
-            <div class="file-drop-icon">📊</div>
-            <div class="file-drop-text" id="dropText">ลากไฟล์ Excel (.xlsx, .xls) หรือ CSV / TXT มาวางที่นี่</div>
-            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .txt" style="display: none" onchange="handleFileSelect(event)">
+            <div class="file-drop-icon">📁</div>
+            <div class="file-drop-text" id="dropText">ลากไฟล์ (.txt, .csv) มาวางที่นี่ หรือคลิกเพื่ออัปโหลด</div>
+            <input type="file" id="fileInput" accept=".txt, .csv" style="display: none" onchange="handleFileSelect(event)">
         </div>
 
         <div class="divider">หรือวางข้อความโดยตรง</div>
-        <textarea id="wordInput" placeholder="ice-cream = ไอศกรีม&#10;good-looking = หน้าตาดี&#10;apple = แอปเปิ้ล"></textarea>
+        <textarea id="wordInput" placeholder="ice-cream ไอศกรีม&#10;good-looking หน้าตาดี&#10;Surrogacy การอุ้มบุญ / การตั้งครรภ์แทน"></textarea>
 
         <div class="section-title">1. เลือกโหมดการเรียนรู้</div>
         <div class="options-grid">
@@ -309,25 +312,25 @@
         <div id="practiceOptions">
             <div class="section-title">ส่วนที่ต้องการฝึกพิมพ์ตาม</div>
             <div class="options-grid three-cols">
-                <label><input type="radio" name="practiceLang" value="en" checked> 🇬🇧 ภาษาอังกฤษ</label>
-                <label><input type="radio" name="practiceLang" value="th"> 🇹🇭 ภาษาไทย</label>
-                <label><input type="radio" name="practiceLang" value="both"> 🔀 ทั้งสองภาษา</label>
+                <label><input type="radio" name="practiceLang" value="en" checked> 🇬🇧 พิมพ์ตามอังกฤษ</label>
+                <label><input type="radio" name="practiceLang" value="th"> 🇹🇭 พิมพ์ตามไทย</label>
+                <label><input type="radio" name="practiceLang" value="both"> 🔀 พิมพ์ตามทั้งสองภาษา</label>
             </div>
         </div>
 
         <div id="flashcardOptions" style="display: none;">
             <div class="section-title">รูปแบบการทดสอบแฟลชการ์ด</div>
             <div class="options-grid">
-                <label><input type="radio" name="fcDirection" value="en2th" checked> 🇬🇧 ซ่อนคำแปลไทย (ทายไทย)</label>
-                <label><input type="radio" name="fcDirection" value="th2en"> 🇹🇭 ซ่อนคำอังกฤษ (ทายอังกฤษ)</label>
+                <label><input type="radio" name="fcDirection" value="en2th" checked> 🇬🇧 ซ่อนคำแปลไทย (พิมพ์ทายคำแปล)</label>
+                <label><input type="radio" name="fcDirection" value="th2en"> 🇹🇭 ซ่อนคำอังกฤษ (พิมพ์ทายคำอังกฤษ)</label>
             </div>
         </div>
 
         <div id="listeningOptions" style="display: none;">
             <div class="section-title">รูปแบบการทดสอบฟังเสียง</div>
             <div class="options-grid">
-                <label><input type="radio" name="listenDirection" value="th2en" checked> 🔊🇹🇭 ฟังไทย ➔ เลือกอังกฤษ</label>
-                <label><input type="radio" name="listenDirection" value="en2th"> 🔊🇬🇧 ฟังอังกฤษ ➔ เลือกไทย</label>
+                <label><input type="radio" name="listenDirection" value="th2en" checked> 🔊🇹🇭 ฟังเสียงไทย ➔ เลือกคำอังกฤษ</label>
+                <label><input type="radio" name="listenDirection" value="en2th"> 🔊🇬🇧 ฟังเสียงอังกฤษ ➔ เลือกคำไทย</label>
             </div>
         </div>
 
@@ -337,11 +340,17 @@
             <label><input type="radio" name="wordOrder" value="random"> 🔀 เรียงแบบสุ่มคำศัพท์</label>
         </div>
 
+        <div class="section-title">3. ภาษาที่ต้องการให้อ่านออกเสียง</div>
+        <div class="options-grid three-cols">
+            <label><input type="radio" name="audioVoiceSetting" value="both" checked> 🔊 อ่านทั้งสองภาษา</label>
+            <label><input type="radio" name="audioVoiceSetting" value="en_only"> 🇬🇧 อ่านเฉพาะอังกฤษ</label>
+            <label><input type="radio" name="audioVoiceSetting" value="none"> 🔇 ปิดการอ่านออกเสียง</label>
+        </div>
+
         <button class="btn-primary" onclick="startApp()">เริ่มเรียนรู้</button>
-        <button class="btn-history" onclick="openHistoryModal()">🏆 ประวัติการเล่นและบันทึกคะแนน</button>
     </div>
 
-    <!-- โหมด Typing & Flashcard -->
+    <!-- โหมด 1 & 2 (Practice & Flashcard) -->
     <div id="practice-section" class="view-section">
         <div class="flashcard-display-container">
             <div class="fc-box">
@@ -364,11 +373,13 @@
         <div class="audio-controls">
             <div class="control-group">
                 <span>🔊 ความดัง:</span>
-                <input type="range" id="volumeRange" min="0" max="1" step="0.1" value="1">
+                <input type="range" id="volumeRange" min="0" max="1" step="0.1" value="1" onchange="updateAudioSettings('practice')">
+                <span id="volumeVal">100%</span>
             </div>
             <div class="control-group">
                 <span>⚡ ความเร็ว:</span>
-                <input type="range" id="rateRange" min="0.5" max="1.5" step="0.1" value="0.9">
+                <input type="range" id="rateRange" min="0.5" max="1.5" step="0.1" value="0.9" onchange="updateAudioSettings('practice')">
+                <span id="rateVal">0.9x</span>
             </div>
         </div>
 
@@ -377,10 +388,11 @@
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
-    <!-- โหมด Listening -->
+    <!-- โหมด Listening Mode -->
     <div id="listening-section" class="view-section">
-        <h2>🎧 ฟังเสียงแล้วเลือกคำตอบ</h2>
-        <button class="btn-speaker-large" onclick="playCurrentListenAudio()" title="กดฟังเสียงซ้ำ">🔊</button>
+        <h2 id="listenTitle">🎧 ฟังเสียงแล้วเลือกคำตอบ</h2>
+        <button class="btn-speaker-large" id="listenPlayBtn" onclick="playCurrentListenAudio()" title="กดฟังเสียงซ้ำ">🔊</button>
+        <p style="color: #64748b; font-size: 13px;">คลิกที่ปุ่มลำโพงเพื่อฟังเสียงซ้ำได้</p>
 
         <div class="listening-choices-grid" id="listeningChoicesGrid"></div>
 
@@ -392,8 +404,22 @@
     <!-- โหมด Matching -->
     <div id="matching-section" class="view-section">
         <h2>🧩 เกมจับคู่คำศัพท์</h2>
-        <div class="score-info" id="setInfoText" style="font-weight:600; color:var(--primary); font-size:15px;">ชุดที่ 1 / 1</div>
+        <div class="score-info" id="setInfoText" style="font-weight:600; color:#2563eb; font-size:15px;">ชุดที่ 1 / 1</div>
         <div class="matching-grid" id="matchingGrid"></div>
+
+        <div class="audio-controls">
+            <div class="control-group">
+                <span>🔊 ความดัง:</span>
+                <input type="range" id="volumeRangeMatch" min="0" max="1" step="0.1" value="1" onchange="updateAudioSettings('matching')">
+                <span id="volumeValMatch">100%</span>
+            </div>
+            <div class="control-group">
+                <span>⚡ ความเร็ว:</span>
+                <input type="range" id="rateRangeMatch" min="0.5" max="1.5" step="0.1" value="0.9" onchange="updateAudioSettings('matching')">
+                <span id="rateValMatch">0.9x</span>
+            </div>
+        </div>
+
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
@@ -406,21 +432,9 @@
         </div>
 
         <div class="speed-word-box" id="speedTargetWord">---</div>
-        <div class="speed-choices-grid" id="speedChoicesGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+        <div class="speed-choices-grid" id="speedChoicesGrid"></div>
 
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
-    </div>
-</div>
-
-<!-- Modal บันทึกคะแนน -->
-<div class="modal" id="historyModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">🏆 ประวัติคะแนนสถิติ</div>
-            <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
-        </div>
-        <div class="history-list" id="historyList"></div>
-        <button class="btn-secondary" style="width:100%; margin-top:0;" onclick="clearHistory()">ล้างประวัติทั้งหมด</button>
     </div>
 </div>
 
@@ -431,76 +445,57 @@
     let fcDirection = 'en2th';
     let listenDirection = 'th2en';
     let practiceLang = 'en'; 
+    let audioVoiceSetting = 'both';
     let isProcessingFc = false;
     let isProcessingListen = false;
 
-    // ตารางแปลงภาษา Eng -> Thai
+    // ตารางแปลงตัวอักษร Eng -> Thai
     const enToThMap = {
-        'q':'ๆ', 'w':'ไ', 'e':'ำ', 'r':'พ', 't':'ะ', 'y':'ั', 'u':'ี', 'i':'ร', 'o':'น', 'p':'ย',
-        'a':'ฟ', 's':'ห', 'd':'ก', 'f':'ด', 'g':'เ', 'h':'้', 'j':'่', 'k':'า', 'l':'ส',
-        'z':'ผ', 'x':'ป', 'c':'แ', 'v':'อ', 'b':'ิ', 'n':'ื', 'm':'ท'
+        'q':'ๆ', 'w':'ไ', 'e':'ำ', 'r':'พ', 't':'ะ', 'y':'ั', 'u':'ี', 'i':'ร', 'o':'น', 'p':'ย', '[':'บ', ']':'ล', '\\':'ฃ',
+        'a':'ฟ', 's':'ห', 'd':'ก', 'f':'ด', 'g':'เ', 'h':'้', 'j':'่', 'k':'า', 'l':'ส', ';':'วง', '\'':'ง',
+        'z':'ผ', 'x':'ป', 'c':'แ', 'v':'อ', 'b':'ิ', 'n':'ื', 'm':'ท', ',':'ม', '.':'ใ', '/':'ฝ',
+        'Q':'0', 'W':'"', 'E':'🎨', 'R':'ฤ', 'T':'ธ', 'Y':'ํ', 'U':'๊', 'I':'ณ', 'O':'ฯ', 'P':'ญ', '{':'ฐ', '}':'ฅ', '|':'ฬ',
+        'A':'ฤ', 'S':'ฆ', 'D':'ฏ', 'F':'โ', 'G':'ฌ', 'H':'็', 'J':'๋', 'K':'ษ', 'L':'ศ', ':':'ซ', '"':'.',
+        'Z':'(' , 'X':')', 'C':'ฉ', 'V':'ฮ', 'B':'ฺ', 'N':'์', 'M':'?', '<':'ฒ', '>':'ฬ', '?':'ฦ'
     };
 
-    // ปรับปรุงการแปลงภาษา ไม่ให้ติดตัวพิมพ์ใหญ่ผิดพลาด
+    const thToEnMap = {};
+    for (let key in enToThMap) { thToEnMap[enToThMap[key]] = key; }
+
     function convertChar(char, targetLang, targetExpectedStr = '', currentPos = 0) {
-        if (/^[0-9\s.,\/#!$%\^&\*;:{}=\-_`~()]$/.test(char)) return char;
-
-        const lowerChar = char.toLowerCase();
-        const lowerExpectedStr = targetExpectedStr.toLowerCase();
-
-        if (targetLang === 'en') {
-            if (lowerExpectedStr && currentPos < lowerExpectedStr.length) {
-                const expectedChar = lowerExpectedStr[currentPos];
-                if (lowerChar === expectedChar) return expectedChar;
-            }
-            return lowerChar;
+        // หากตัวอักษรที่พิมพ์ ตรงกับตัวอักษรของคำเฉลยในตำแหน่งนั้นอยู่แล้ว ไม่ต้องทำการแปลงภาษา
+        if (targetExpectedStr && currentPos < targetExpectedStr.length) {
+            const expectedChar = targetExpectedStr[currentPos];
+            if (char === expectedChar) return char;
         }
 
-        if (targetLang === 'th') {
-            return enToThMap[lowerChar] || char;
-        }
-
-        return lowerChar;
+        if (targetLang === 'th') return enToThMap[char] || char;
+        if (targetLang === 'en') return thToEnMap[char] || char;
+        return char;
     }
 
-    // Matching & Speed Global States
+    // Match & Speed states
     let currentMatchSet = 0, totalMatchSets = 0;
     const SET_SIZE = 6;
     let selectedCards = [], matchedPairsCount = 0;
 
     let speedTimerInterval = null, speedTimeLeft = 60, speedScore = 0, speedCombo = 0, speedCurrentTarget = null, isSpeedLock = false;
 
-    // --- อ่านไฟล์ Excel / CSV / TXT ---
+    // Drag & Drop
     const dropArea = document.getElementById('dropArea');
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, e => e.preventDefault()));
-    dropArea.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) parseFile(e.dataTransfer.files[0]); });
-    function handleFileSelect(e) { if (e.target.files.length) parseFile(e.target.files[0]); }
-
-    function parseFile(file) {
-        const fileName = file.name;
-        const ext = fileName.split('.').pop().toLowerCase();
-        document.getElementById('dropText').innerText = `อัปโหลดแล้ว: ${fileName}`;
-
-        if (ext === 'xlsx' || ext === 'xls') {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-                
-                let textResult = "";
-                jsonData.forEach(row => {
-                    if (row[0] && row[1]) textResult += `${row[0]} = ${row[1]}\n`;
-                });
-                document.getElementById('wordInput').value = textResult;
-            };
-            reader.readAsArrayBuffer(file);
-        } else {
-            const reader = new FileReader();
-            reader.onload = (e) => { document.getElementById('wordInput').value = e.target.result; };
-            reader.readAsText(file);
-        }
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, preventDefaults, false));
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    ['dragenter', 'dragover'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.add('dragover'), false));
+    ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('dragover'), false));
+    dropArea.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) readFile(e.dataTransfer.files[0]); });
+    function handleFileSelect(e) { if (e.target.files.length) readFile(e.target.files[0]); }
+    function readFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('wordInput').value = e.target.result;
+            document.getElementById('dropText').innerText = `อัปโหลดแล้ว: ${file.name}`;
+        };
+        reader.readAsText(file);
     }
 
     function updateSubOptions(mode) {
@@ -521,7 +516,9 @@
                 return;
             }
             const autoMatch = trimmed.match(/^([A-Za-z0-9\s'-]+)\s+(.+)$/);
-            if (autoMatch) parsedResults.push({ word: autoMatch[1].trim(), meaning: autoMatch[2].trim() });
+            if (autoMatch) {
+                parsedResults.push({ word: autoMatch[1].trim(), meaning: autoMatch[2].trim() });
+            }
         });
         return parsedResults;
     }
@@ -535,55 +532,68 @@
         return arr;
     }
 
-    function cleanString(str) { return str.toLowerCase().replace(/\s+/g, '').trim(); }
+    function cleanString(str) {
+        return str.toLowerCase().replace(/\s+/g, '').trim();
+    }
 
     function checkFlexibleAnswer(userInputStr, targetFullStr) {
         const cleanedUser = cleanString(userInputStr);
         if (!cleanedUser) return false;
+
         const subAnswers = targetFullStr.split(/[/,;]/).map(s => cleanString(s));
         return subAnswers.some(ans => ans === cleanedUser) || cleanString(targetFullStr) === cleanedUser;
     }
 
-    // --- เริ่มแอปพลิเคชัน ---
     function startApp() {
         const rawText = document.getElementById('wordInput').value;
         wordList = parseRawText(rawText);
 
-        if (wordList.length === 0) { alert('กรุณาอัปโหลดไฟล์ หรือใส่คำศัพท์ก่อนครับ'); return; }
+        if (wordList.length === 0) {
+            alert('กรุณาใส่คำศัพท์ก่อนเริ่มครับ');
+            return;
+        }
 
         currentMode = document.querySelector('input[name="appMode"]:checked').value;
+
         if (currentMode === 'speed' && wordList.length < 4) {
-            alert('โหมดแข่งคำศัพท์ต้องมีคำศัพท์อย่างน้อย 4 คำขึ้นไปครับ'); return;
+            alert('โหมดแข่งคำศัพท์จำเป็นต้องมีคำศัพท์อย่างน้อย 4 คำขึ้นไปครับ');
+            return;
         }
 
         practiceLang = document.querySelector('input[name="practiceLang"]:checked').value;
         fcDirection = document.querySelector('input[name="fcDirection"]:checked').value;
         listenDirection = document.querySelector('input[name="listenDirection"]:checked').value;
-        if (document.querySelector('input[name="wordOrder"]:checked').value === 'random') wordList = shuffleArray(wordList);
+        audioVoiceSetting = document.querySelector('input[name="audioVoiceSetting"]:checked').value;
+        const isRandom = document.querySelector('input[name="wordOrder"]:checked').value === 'random';
+
+        if (isRandom) wordList = shuffleArray(wordList);
 
         document.getElementById('setup-section').style.display = 'none';
 
         if (currentMode === 'matching') {
             document.getElementById('matching-section').style.display = 'block';
-            currentMatchSet = 0; totalMatchSets = Math.ceil(wordList.length / SET_SIZE);
+            currentMatchSet = 0;
+            totalMatchSets = Math.ceil(wordList.length / SET_SIZE);
             initMatchingSet();
         } else if (currentMode === 'speed') {
             document.getElementById('speed-section').style.display = 'block';
             startSpeedGame();
         } else if (currentMode === 'listening') {
             document.getElementById('listening-section').style.display = 'block';
-            currentIndex = 0; showListeningQuestion();
+            currentIndex = 0;
+            showListeningQuestion();
         } else {
             document.getElementById('practice-section').style.display = 'block';
-            currentIndex = 0; showPracticeOrFlashcardWord();
+            currentIndex = 0;
+            showPracticeOrFlashcardWord();
         }
     }
 
     function showPracticeOrFlashcardWord() {
         if (currentIndex >= wordList.length) {
             alert('🎉 ยินดีด้วย! คุณทำครบทุกคำเรียบร้อยแล้ว');
-            saveScoreRecord('โหมดฝึกพิมพ์/แฟลชการ์ด', `สำเร็จ ${wordList.length} คำ`);
-            resetApp(); return;
+            resetApp();
+            return;
         }
 
         isProcessingFc = false;
@@ -592,16 +602,26 @@
         const checkBtn = document.getElementById('checkBtn');
         const answerReveal = document.getElementById('answerReveal');
 
-        inputField.value = ''; inputField.className = 'typing-input';
-        answerReveal.innerText = ''; answerReveal.className = 'answer-reveal-box';
+        inputField.value = '';
+        inputField.className = 'typing-input';
+        answerReveal.innerText = '';
+        answerReveal.className = 'answer-reveal-box';
 
         if (currentMode === 'practice') {
             checkBtn.style.display = 'none';
             document.getElementById('targetWord').innerText = item.word;
             document.getElementById('targetMeaning').innerText = item.meaning;
-            inputField.placeholder = (practiceLang === 'en') ? `พิมพ์ภาษาอังกฤษ (${item.word})` : `พิมพ์ภาษาไทย (${item.meaning})`;
+
+            if (practiceLang === 'en') {
+                inputField.placeholder = `พิมพ์ภาษาอังกฤษ (${item.word})`;
+            } else if (practiceLang === 'th') {
+                inputField.placeholder = `พิมพ์ภาษาไทย (${item.meaning})`;
+            } else {
+                inputField.placeholder = `พิมพ์ต่อเนื่องอัตโนมัติ (${item.word}${item.meaning.split(/[/,;]/)[0]})`;
+            }
             speakWord(item.word, 'en');
-        } else {
+
+        } else if (currentMode === 'flashcard') {
             if (fcDirection === 'en2th') {
                 document.getElementById('targetWord').innerText = item.word;
                 document.getElementById('targetMeaning').innerText = '???';
@@ -616,18 +636,44 @@
             checkBtn.style.display = 'block';
         }
 
-        document.getElementById('progressBar').style.width = ((currentIndex / wordList.length) * 100) + '%';
+        const progressPercent = (currentIndex / wordList.length) * 100;
+        document.getElementById('progressBar').style.width = progressPercent + '%';
         document.getElementById('progressText').innerText = `คำที่ ${currentIndex + 1} / ${wordList.length}`;
         inputField.focus();
     }
 
-    // --- Typing Real-time & Convert Char ---
+    // --- ระบบพิมพ์อัตโนมัติ Real-time Keyboard (ปรับปรุงแก้ไขการบล็อกเครื่องหมาย) ---
     document.getElementById('userInput').addEventListener('beforeinput', function(e) {
         if (!e.data) return;
+
         const item = wordList[currentIndex];
+        const currentVal = this.value;
         const cursorStart = this.selectionStart;
-        let expectedLang = (currentMode === 'practice') ? practiceLang : ((fcDirection === 'en2th') ? 'th' : 'en');
-        let targetExpectedStr = (expectedLang === 'en') ? item.word : item.meaning;
+        let expectedLang = 'en';
+        let targetExpectedStr = '';
+
+        if (currentMode === 'practice') {
+            if (practiceLang === 'en') {
+                expectedLang = 'en';
+                targetExpectedStr = item.word;
+            } else if (practiceLang === 'th') {
+                expectedLang = 'th';
+                targetExpectedStr = item.meaning;
+            } else if (practiceLang === 'both') {
+                if (cleanString(currentVal).length < cleanString(item.word).length) {
+                    expectedLang = 'en';
+                    targetExpectedStr = item.word;
+                } else {
+                    expectedLang = 'th';
+                    targetExpectedStr = item.meaning;
+                }
+            }
+        } else if (currentMode === 'flashcard') {
+            expectedLang = (fcDirection === 'en2th') ? 'th' : 'en';
+            targetExpectedStr = (fcDirection === 'en2th') ? item.meaning : item.word;
+        } else {
+            return;
+        }
 
         let convertedData = '';
         for (let i = 0; i < e.data.length; i++) {
@@ -643,73 +689,147 @@
         }
     });
 
+    // ระบบตรวจคำตอบ Real-time สำหรับโหมดฝึกพิมพ์
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
         const val = e.target.value;
 
-        if (practiceLang === 'en' && cleanString(val) === cleanString(item.word)) {
-            this.className = 'typing-input correct';
-            speakWord(item.word, 'en', () => { currentIndex++; showPracticeOrFlashcardWord(); });
-        } else if (practiceLang === 'th' && checkFlexibleAnswer(val, item.meaning)) {
-            this.className = 'typing-input correct';
-            speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
+        if (practiceLang === 'en') {
+            if (cleanString(val) === cleanString(item.word)) {
+                this.className = 'typing-input correct';
+                speakWord(item.word, 'en', () => {
+                    currentIndex++;
+                    showPracticeOrFlashcardWord();
+                });
+            } else if (cleanString(item.word).startsWith(cleanString(val))) {
+                this.className = 'typing-input';
+            } else {
+                this.className = 'typing-input incorrect';
+            }
+        } else if (practiceLang === 'th') {
+            if (checkFlexibleAnswer(val, item.meaning)) {
+                this.className = 'typing-input correct';
+                speakWord(item.meaning, 'th', () => {
+                    currentIndex++;
+                    showPracticeOrFlashcardWord();
+                });
+            } else {
+                this.className = 'typing-input';
+            }
+        } else if (practiceLang === 'both') {
+            const cleanVal = cleanString(val);
+            const cleanEn = cleanString(item.word);
+            const subMeanings = item.meaning.split(/[/,;]/).map(s => cleanString(s));
+
+            if (cleanVal.startsWith(cleanEn)) {
+                const tailInput = cleanVal.slice(cleanEn.length);
+
+                if (tailInput === '') {
+                    this.className = 'typing-input';
+                } else if (subMeanings.some(m => m === tailInput)) {
+                    this.className = 'typing-input correct';
+                    speakWord(item.word, 'en', () => {
+                        speakWord(item.meaning, 'th', () => {
+                            currentIndex++;
+                            showPracticeOrFlashcardWord();
+                        });
+                    });
+                } else if (subMeanings.some(m => m.startsWith(tailInput))) {
+                    this.className = 'typing-input';
+                } else {
+                    this.className = 'typing-input incorrect';
+                }
+            } else if (cleanEn.startsWith(cleanVal)) {
+                this.className = 'typing-input';
+            } else {
+                this.className = 'typing-input incorrect';
+            }
         }
     });
 
     document.getElementById('userInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && currentMode === 'flashcard') checkFlashcardAnswer();
+        if (e.key === 'Enter' && currentMode === 'flashcard') {
+            checkFlashcardAnswer();
+        }
     });
 
+    // ตรวจคำตอบแฟลชการ์ด
     function checkFlashcardAnswer() {
         if (isProcessingFc) return;
+        
         const item = wordList[currentIndex];
         const val = document.getElementById('userInput').value;
-        const isCorrect = (fcDirection === 'en2th') ? checkFlexibleAnswer(val, item.meaning) : (cleanString(val) === cleanString(item.word));
+        const inputField = document.getElementById('userInput');
+        const answerReveal = document.getElementById('answerReveal');
+
+        let isCorrect = false;
+        let targetAnswer = (fcDirection === 'en2th') ? item.meaning : item.word;
+
+        if (fcDirection === 'en2th') {
+            isCorrect = checkFlexibleAnswer(val, item.meaning);
+        } else {
+            isCorrect = (cleanString(val) === cleanString(item.word));
+        }
 
         isProcessingFc = true;
-        if (fcDirection === 'en2th') document.getElementById('targetMeaning').innerText = item.meaning;
-        else document.getElementById('targetWord').innerText = item.word;
+
+        if (fcDirection === 'en2th') {
+            document.getElementById('targetMeaning').innerText = item.meaning;
+        } else {
+            document.getElementById('targetWord').innerText = item.word;
+        }
 
         if (isCorrect) {
-            document.getElementById('userInput').className = 'typing-input correct';
-            document.getElementById('answerReveal').innerText = '✓ ถูกต้อง!';
-            document.getElementById('answerReveal').className = 'answer-reveal-box show-correct';
-            speakWord(item.word, 'en', () => { currentIndex++; showPracticeOrFlashcardWord(); });
+            inputField.className = 'typing-input correct';
+            answerReveal.innerText = `✓ ถูกต้อง! (${targetAnswer})`;
+            answerReveal.className = 'answer-reveal-box show-correct';
+            
+            speakWord(item.word, 'en', () => {
+                speakWord(item.meaning, 'th', () => {
+                    currentIndex++;
+                    showPracticeOrFlashcardWord();
+                });
+            });
         } else {
-            document.getElementById('userInput').className = 'typing-input incorrect';
-            document.getElementById('answerReveal').innerText = `✕ เฉลย: ${(fcDirection === 'en2th') ? item.meaning : item.word}`;
-            document.getElementById('answerReveal').className = 'answer-reveal-box show-incorrect';
-            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 2000);
+            inputField.className = 'typing-input incorrect';
+            answerReveal.innerText = `✕ เฉลย: ${targetAnswer}`;
+            answerReveal.className = 'answer-reveal-box show-incorrect';
+            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 2400);
         }
     }
 
     // --- Listening Mode ---
     function showListeningQuestion() {
         if (currentIndex >= wordList.length) {
-            alert('🎉 ยินดีด้วย! คุณทดสอบการฟังครบเรียบร้อยแล้ว');
-            saveScoreRecord('โหมดการฟัง', `สำเร็จ ${wordList.length} คำ`);
-            resetApp(); return;
+            alert('🎉 ยินดีด้วย! คุณทดสอบการฟังครบทุกคำเรียบร้อยแล้ว');
+            resetApp();
+            return;
         }
 
         isProcessingListen = false;
         const item = wordList[currentIndex];
-        const grid = document.getElementById('listeningChoicesGrid'); grid.innerHTML = '';
+        const grid = document.getElementById('listeningChoicesGrid');
+        grid.innerHTML = '';
 
-        document.getElementById('progressBarListen').style.width = ((currentIndex / wordList.length) * 100) + '%';
+        const progressPercent = (currentIndex / wordList.length) * 100;
+        document.getElementById('progressBarListen').style.width = progressPercent + '%';
         document.getElementById('progressTextListen').innerText = `คำที่ ${currentIndex + 1} / ${wordList.length}`;
 
         const correctTarget = (listenDirection === 'th2en') ? item.word : item.meaning;
+        let otherItems = wordList.filter((_, idx) => idx !== currentIndex);
+        otherItems = shuffleArray(otherItems);
+
         let choices = [correctTarget];
-        let others = shuffleArray(wordList.filter((_, idx) => idx !== currentIndex));
-        for (let i = 0; i < Math.min(3, others.length); i++) {
-            choices.push((listenDirection === 'th2en') ? others[i].word : others[i].meaning);
+        for (let i = 0; i < Math.min(3, otherItems.length); i++) {
+            choices.push((listenDirection === 'th2en') ? otherItems[i].word : otherItems[i].meaning);
         }
         choices = shuffleArray(choices);
 
         choices.forEach(choiceText => {
             const btn = document.createElement('button');
-            btn.className = 'listen-choice-btn'; btn.innerText = choiceText;
+            btn.className = 'listen-choice-btn';
+            btn.innerText = choiceText;
             btn.onclick = () => selectListeningChoice(btn, choiceText, item);
             grid.appendChild(btn);
         });
@@ -718,30 +838,129 @@
     }
 
     function playCurrentListenAudio() {
+        if (wordList.length === 0 || currentIndex >= wordList.length) return;
         const item = wordList[currentIndex];
-        if (listenDirection === 'th2en') speakWord(item.meaning, 'th', null, true);
-        else speakWord(item.word, 'en', null, true);
-    }
-
-    function selectListeningChoice(btn, selectedText, item) {
-        if (isProcessingListen) return;
-        isProcessingListen = true;
-
-        const targetCorrectText = (listenDirection === 'th2en') ? item.word : item.meaning;
-        if (selectedText === targetCorrectText) {
-            btn.classList.add('correct-choice');
-            speakWord(item.word, 'en', () => { currentIndex++; showListeningQuestion(); });
+        if (listenDirection === 'th2en') {
+            speakWord(item.meaning, 'th', null, true);
         } else {
-            btn.classList.add('incorrect-choice');
-            setTimeout(() => { currentIndex++; showListeningQuestion(); }, 1800);
+            speakWord(item.word, 'en', null, true);
         }
     }
 
-    // --- Speed Game ---
+    function selectListeningChoice(selectedBtn, selectedText, item) {
+        if (isProcessingListen) return;
+        isProcessingListen = true;
+
+        let targetCorrectText = (listenDirection === 'th2en') ? item.word : item.meaning;
+        let isCorrect = (selectedText === targetCorrectText);
+
+        if (isCorrect) {
+            selectedBtn.classList.add('correct-choice');
+            speakWord(item.word, 'en', () => {
+                speakWord(item.meaning, 'th', () => {
+                    currentIndex++;
+                    showListeningQuestion();
+                });
+            });
+        } else {
+            selectedBtn.classList.add('incorrect-choice');
+            const allBtns = document.querySelectorAll('.listen-choice-btn');
+            allBtns.forEach(b => {
+                if (b.innerText === targetCorrectText) {
+                    b.classList.add('correct-choice');
+                }
+            });
+            setTimeout(() => { currentIndex++; showListeningQuestion(); }, 2200);
+        }
+    }
+
+    // --- โหมด จับคู่ ---
+    function initMatchingSet() {
+        const grid = document.getElementById('matchingGrid');
+        grid.innerHTML = '';
+        selectedCards = [];
+        matchedPairsCount = 0;
+
+        document.getElementById('setInfoText').innerText = `ชุดที่ ${currentMatchSet + 1} / ${totalMatchSets}`;
+
+        const startIdx = currentMatchSet * SET_SIZE;
+        const endIdx = Math.min(startIdx + SET_SIZE, wordList.length);
+        const gameItems = wordList.slice(startIdx, endIdx);
+
+        let cardsData = [];
+
+        gameItems.forEach((item, index) => {
+            cardsData.push({ id: index, text: item.word, type: 'en', englishWord: item.word, thaiWord: item.meaning });
+            cardsData.push({ id: index, text: item.meaning, type: 'th', englishWord: item.word, thaiWord: item.meaning });
+        });
+
+        cardsData = shuffleArray(cardsData);
+
+        cardsData.forEach(data => {
+            const card = document.createElement('div');
+            card.className = 'match-card';
+            card.innerText = data.text;
+            card.dataset.id = data.id;
+            card.dataset.type = data.type;
+            card.dataset.english = data.englishWord;
+            card.dataset.thai = data.thaiWord;
+
+            card.onclick = () => selectCard(card, gameItems.length);
+            grid.appendChild(card);
+        });
+    }
+
+    function selectCard(card, totalItemsInSet) {
+        if (card.classList.contains('selected') || card.classList.contains('matched')) return;
+
+        if (card.dataset.type === 'en') {
+            speakWord(card.dataset.english, 'en', null, true);
+        } else {
+            speakWord(card.dataset.thai, 'th', null, true);
+        }
+
+        card.classList.add('selected');
+        selectedCards.push(card);
+
+        if (selectedCards.length === 2) {
+            const [c1, c2] = selectedCards;
+            if (c1.dataset.id === c2.dataset.id && c1.dataset.type !== c2.dataset.type) {
+                c1.classList.add('matched');
+                c2.classList.add('matched');
+                matchedPairsCount++;
+
+                if (matchedPairsCount === totalItemsInSet) {
+                    currentMatchSet++;
+                    setTimeout(() => {
+                        if (currentMatchSet < totalMatchSets) {
+                            alert(`✨ ผ่านชุดที่ ${currentMatchSet} แล้ว! ไปเล่นชุดถัดไปกันเลย`);
+                            initMatchingSet();
+                        } else {
+                            alert('🎉 ยินดีด้วย! คุณจับคู่ครบทุกคำศัพท์เรียบร้อยแล้ว');
+                            resetApp();
+                        }
+                    }, 400);
+                }
+            } else {
+                setTimeout(() => {
+                    c1.classList.remove('selected');
+                    c2.classList.remove('selected');
+                }, 500);
+            }
+            selectedCards = [];
+        }
+    }
+
+    // --- โหมด Speed Vocab ---
     function startSpeedGame() {
-        speedTimeLeft = 60; speedScore = 0; speedCombo = 0;
+        speedTimeLeft = 60;
+        speedScore = 0;
+        speedCombo = 0;
+        isSpeedLock = false;
+
         document.getElementById('speedScore').innerText = `คะแนน: ${speedScore}`;
         document.getElementById('speedCombo').innerText = `Combo x${speedCombo}`;
+        document.getElementById('speedTimer').innerText = `⏱️ ${speedTimeLeft}s`;
 
         clearInterval(speedTimerInterval);
         speedTimerInterval = setInterval(() => {
@@ -749,8 +968,7 @@
             document.getElementById('speedTimer').innerText = `⏱️ ${speedTimeLeft}s`;
             if (speedTimeLeft <= 0) {
                 clearInterval(speedTimerInterval);
-                alert(`🏁 หมดเวลา! คะแนนของคุณคือ: ${speedScore} คะแนน`);
-                saveScoreRecord('โหมด Speed จับเวลา', `${speedScore} คะแนน`);
+                alert(`🏁 หมดเวลาแล้ว! คะแนนรวมของคุณคือ: ${speedScore} คะแนน (ทำคอมโบสูงสุด x${speedCombo})`);
                 resetApp();
             }
         }, 1000);
@@ -760,139 +978,131 @@
 
     function nextSpeedQuestion() {
         isSpeedLock = false;
-        speedCurrentTarget = wordList[Math.floor(Math.random() * wordList.length)];
+        const randomIndex = Math.floor(Math.random() * wordList.length);
+        speedCurrentTarget = wordList[randomIndex];
+
         document.getElementById('speedTargetWord').innerText = speedCurrentTarget.word;
 
         let choices = [speedCurrentTarget.meaning];
-        let available = shuffleArray(wordList.filter(w => w.word !== speedCurrentTarget.word));
-        for (let i = 0; i < Math.min(3, available.length); i++) choices.push(available[i].meaning);
+        let availableOtherWords = wordList.filter(w => w.word !== speedCurrentTarget.word);
+        availableOtherWords = shuffleArray(availableOtherWords);
+
+        for (let i = 0; i < Math.min(3, availableOtherWords.length); i++) {
+            choices.push(availableOtherWords[i].meaning);
+        }
+
         choices = shuffleArray(choices);
 
-        const grid = document.getElementById('speedChoicesGrid'); grid.innerHTML = '';
-        choices.forEach(text => {
+        const grid = document.getElementById('speedChoicesGrid');
+        grid.innerHTML = '';
+
+        choices.forEach(choiceText => {
             const btn = document.createElement('button');
-            btn.className = 'speed-choice-btn'; btn.innerText = text;
-            btn.onclick = () => selectSpeedChoice(btn, text);
+            btn.className = 'speed-choice-btn';
+            btn.innerText = choiceText;
+            btn.onclick = () => selectSpeedChoice(btn, choiceText);
             grid.appendChild(btn);
         });
     }
 
     function selectSpeedChoice(btn, selectedText) {
-        if (isSpeedLock) return; isSpeedLock = true;
-        if (selectedText === speedCurrentTarget.meaning) {
-            btn.classList.add('correct-btn'); speedCombo++;
-            speedScore += (100 + (speedCombo * 20));
+        if (isSpeedLock) return;
+        isSpeedLock = true;
+
+        speakWord(speedCurrentTarget.word, 'en', null, true);
+
+        const isCorrect = (selectedText === speedCurrentTarget.meaning);
+
+        if (isCorrect) {
+            btn.classList.add('correct-btn');
+            speedCombo++;
+            const bonusScore = Math.min(speedCombo * 20, 100);
+            speedScore += (100 + bonusScore);
         } else {
-            btn.classList.add('incorrect-btn'); speedCombo = 0;
+            btn.classList.add('incorrect-btn');
+            speedCombo = 0;
             speedScore = Math.max(0, speedScore - 50);
+
+            const allBtns = document.querySelectorAll('.speed-choice-btn');
+            allBtns.forEach(b => {
+                if (b.innerText === speedCurrentTarget.meaning) {
+                    b.classList.add('correct-btn');
+                }
+            });
         }
+
         document.getElementById('speedScore').innerText = `คะแนน: ${speedScore}`;
         document.getElementById('speedCombo').innerText = `Combo x${speedCombo}`;
-        setTimeout(nextSpeedQuestion, 400);
+
+        setTimeout(() => { nextSpeedQuestion(); }, isCorrect ? 400 : 1000);
     }
 
-    // --- Matching Game ---
-    function initMatchingSet() {
-        const grid = document.getElementById('matchingGrid'); grid.innerHTML = '';
-        selectedCards = []; matchedPairsCount = 0;
-        document.getElementById('setInfoText').innerText = `ชุดที่ ${currentMatchSet + 1} / ${totalMatchSets}`;
-
-        const startIdx = currentMatchSet * SET_SIZE;
-        const gameItems = wordList.slice(startIdx, Math.min(startIdx + SET_SIZE, wordList.length));
-        let cardsData = [];
-
-        gameItems.forEach((item, index) => {
-            cardsData.push({ id: index, text: item.word, type: 'en' });
-            cardsData.push({ id: index, text: item.meaning, type: 'th' });
-        });
-
-        cardsData = shuffleArray(cardsData);
-        cardsData.forEach(data => {
-            const card = document.createElement('div');
-            card.className = 'match-card'; card.innerText = data.text;
-            card.dataset.id = data.id; card.dataset.type = data.type;
-            card.onclick = () => selectCard(card, gameItems.length);
-            grid.appendChild(card);
-        });
-    }
-
-    function selectCard(card, totalItems) {
-        if (card.classList.contains('selected') || card.classList.contains('matched')) return;
-        card.classList.add('selected'); selectedCards.push(card);
-
-        if (selectedCards.length === 2) {
-            const [c1, c2] = selectedCards;
-            if (c1.dataset.id === c2.dataset.id && c1.dataset.type !== c2.dataset.type) {
-                c1.classList.add('matched'); c2.classList.add('matched');
-                matchedPairsCount++;
-                if (matchedPairsCount === totalItems) {
-                    currentMatchSet++;
-                    setTimeout(() => {
-                        if (currentMatchSet < totalMatchSets) initMatchingSet();
-                        else {
-                            alert('🎉 ยินดีด้วย! จับคู่ครบทุกชุดแล้ว');
-                            saveScoreRecord('โหมดเกมจับคู่', 'ผ่านทุกชุด');
-                            resetApp();
-                        }
-                    }, 400);
-                }
-            } else {
-                setTimeout(() => { c1.classList.remove('selected'); c2.classList.remove('selected'); }, 500);
-            }
-            selectedCards = [];
+    // --- ระบบเล่นเสียงอ่าน (Speech Synthesis) ---
+    function updateAudioSettings(modeContext) {
+        if (modeContext === 'matching') {
+            const volMatch = document.getElementById('volumeRangeMatch').value;
+            const rateMatch = document.getElementById('rateRangeMatch').value;
+            document.getElementById('volumeValMatch').innerText = Math.round(volMatch * 100) + '%';
+            document.getElementById('rateValMatch').innerText = rateMatch + 'x';
+        } else {
+            const vol = document.getElementById('volumeRange').value;
+            const rate = document.getElementById('rateRange').value;
+            document.getElementById('volumeVal').innerText = Math.round(vol * 100) + '%';
+            document.getElementById('rateVal').innerText = rate + 'x';
         }
     }
 
-    // --- Audio Engine ---
     function speakWord(text, lang = 'en', onEndCallback = null, forcePlay = false) {
-        if (!('speechSynthesis' in window)) { if (onEndCallback) onEndCallback(); return; }
-        window.speechSynthesis.cancel();
+        if (!('speechSynthesis' in window)) {
+            if (onEndCallback) onEndCallback();
+            return;
+        }
+
+        if (!forcePlay) {
+            if (audioVoiceSetting === 'none') {
+                if (onEndCallback) onEndCallback();
+                return;
+            }
+            if (audioVoiceSetting === 'en_only' && lang === 'th') {
+                if (onEndCallback) onEndCallback();
+                return;
+            }
+        }
+
+        let volSetting = 1.0;
+        let rateSetting = 0.9;
+
+        if (currentMode === 'matching') {
+            volSetting = parseFloat(document.getElementById('volumeRangeMatch').value);
+            rateSetting = parseFloat(document.getElementById('rateRangeMatch').value);
+        } else {
+            volSetting = parseFloat(document.getElementById('volumeRange').value);
+            rateSetting = parseFloat(document.getElementById('rateRange').value);
+        }
 
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = (lang === 'th') ? 'th-TH' : 'en-US';
-        utterance.volume = parseFloat(document.getElementById('volumeRange').value);
-        utterance.rate = parseFloat(document.getElementById('rateRange').value);
+        utterance.volume = Math.max(0.0, Math.min(volSetting, 1.0));
+        utterance.rate = rateSetting;
 
         if (onEndCallback) {
-            utterance.onend = onEndCallback;
-            utterance.onerror = onEndCallback;
+            utterance.onend = () => { onEndCallback(); };
+            utterance.onerror = () => { onEndCallback(); };
         }
+
         window.speechSynthesis.speak(utterance);
     }
 
     function replayAudio(type) {
         if (wordList.length > 0 && currentIndex < wordList.length) {
-            speakWord((type === 'en') ? wordList[currentIndex].word : wordList[currentIndex].meaning, type, null, true);
+            if (type === 'en') {
+                speakWord(wordList[currentIndex].word, 'en', null, true);
+            } else {
+                speakWord(wordList[currentIndex].meaning, 'th', null, true);
+            }
+            document.getElementById('userInput').focus();
         }
     }
-
-    // --- Leaderboard & LocalStorage ---
-    function saveScoreRecord(modeName, scoreText) {
-        const history = JSON.parse(localStorage.getItem('vocabApp_history') || '[]');
-        const record = { date: new Date().toLocaleString('th-TH'), mode: modeName, score: scoreText };
-        history.unshift(record);
-        localStorage.setItem('vocabApp_history', JSON.stringify(history.slice(0, 20)));
-    }
-
-    function openHistoryModal() {
-        const history = JSON.parse(localStorage.getItem('vocabApp_history') || '[]');
-        const container = document.getElementById('historyList'); container.innerHTML = '';
-
-        if (history.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">ยังไม่มีประวัติการเล่น</div>';
-        } else {
-            history.forEach(item => {
-                const div = document.createElement('div'); div.className = 'history-item';
-                div.innerHTML = `<div><strong>${item.mode}</strong><br><small style="color:var(--text-muted);">${item.date}</small></div>
-                                 <div style="font-weight:700; color:var(--primary);">${item.score}</div>`;
-                container.appendChild(div);
-            });
-        }
-        document.getElementById('historyModal').style.display = 'flex';
-    }
-
-    function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
-    function clearHistory() { localStorage.removeItem('vocabApp_history'); openHistoryModal(); }
 
     function resetApp() {
         if (speedTimerInterval) clearInterval(speedTimerInterval);
@@ -902,6 +1112,8 @@
         document.getElementById('listening-section').style.display = 'none';
         document.getElementById('matching-section').style.display = 'none';
         document.getElementById('speed-section').style.display = 'none';
+        document.getElementById('dropText').innerText = 'ลากไฟล์ (.txt, .csv) มาวางที่นี่ หรือคลิกเพื่ออัปโหลด';
+        document.getElementById('fileInput').value = '';
     }
 </script>
 
