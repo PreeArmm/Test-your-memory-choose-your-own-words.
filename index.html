@@ -449,34 +449,40 @@
     let isProcessingFc = false;
     let isProcessingListen = false;
 
-    // ตารางแปลงตัวอักษร Eng -> Thai เฉพาะตัวอักษรตัวพิมพ์เล็กและพิมพ์ใหญ่ (เว้นปุ่มตัวเลขและเครื่องหมายไว้)
+    // ตารางแปลงตัวอักษร Eng -> Thai
     const enToThMap = {
         'q':'ๆ', 'w':'ไ', 'e':'ำ', 'r':'พ', 't':'ะ', 'y':'ั', 'u':'ี', 'i':'ร', 'o':'น', 'p':'ย',
         'a':'ฟ', 's':'ห', 'd':'ก', 'f':'ด', 'g':'เ', 'h':'้', 'j':'่', 'k':'า', 'l':'ส',
-        'z':'ผ', 'x':'ป', 'c':'แ', 'v':'อ', 'b':'ิ', 'n':'ื', 'm':'ท',
-        'Q':'ํ', 'W':'"', 'E':'ำ', 'R':'ฤ', 'T':'ธ', 'Y':'็', 'U':'๊', 'I':'ณ', 'O':'ฯ', 'P':'ญ',
-        'A':'ฤ', 'S':'ฆ', 'D':'ฏ', 'F':'โ', 'G':'ฌ', 'H':'็', 'J':'๋', 'K':'ษ', 'L':'ศ',
-        'Z':'(' , 'X':')', 'C':'ฉ', 'V':'ฮ', 'B':'ฺ', 'N':'์', 'M':'?'
+        'z':'ผ', 'x':'ป', 'c':'แ', 'v':'อ', 'b':'ิ', 'n':'ื', 'm':'ท'
     };
 
     const thToEnMap = {};
     for (let key in enToThMap) { thToEnMap[enToThMap[key]] = key; }
 
+    // ฟังก์ชันแปลงภาษาที่ปรับแก้เรื่องตัวพิมพ์ใหญ่อย่างสมบูรณ์
     function convertChar(char, targetLang, targetExpectedStr = '', currentPos = 0) {
-        // หากตัวอักษรที่พิมพ์เป็นตัวเลข ตัวสเปซบาร์ หรือสัญลักษณ์ ไม่ต้องเปลี่ยนภาษา
         if (/^[0-9\s.,\/#!$%\^&\*;:{}=\-_`~()]$/.test(char)) {
             return char;
         }
 
-        // หากตัวอักษรที่พิมพ์ ตรงกับตัวอักษรของคำเฉลยในตำแหน่งนั้นอยู่แล้ว ไม่ต้องทำการแปลงภาษา
-        if (targetExpectedStr && currentPos < targetExpectedStr.length) {
-            const expectedChar = targetExpectedStr[currentPos];
-            if (char === expectedChar) return char;
+        const lowerChar = char.toLowerCase();
+        const lowerExpectedStr = targetExpectedStr.toLowerCase();
+
+        if (targetLang === 'en') {
+            if (lowerExpectedStr && currentPos < lowerExpectedStr.length) {
+                const expectedChar = lowerExpectedStr[currentPos];
+                if (lowerChar === expectedChar) {
+                    return expectedChar;
+                }
+            }
+            return lowerChar;
         }
 
-        if (targetLang === 'th') return enToThMap[char] || char;
-        if (targetLang === 'en') return thToEnMap[char] || char;
-        return char;
+        if (targetLang === 'th') {
+            return enToThMap[lowerChar] || char;
+        }
+
+        return lowerChar;
     }
 
     // Match & Speed states
@@ -647,7 +653,7 @@
         inputField.focus();
     }
 
-    // --- ระบบพิมพ์อัตโนมัติ Real-time Keyboard (ปรับปรุงแก้ไขตัวเลขให้ทำงานได้ถูกต้อง) ---
+    // --- ระบบพิมพ์อัตโนมัติ Real-time Keyboard ---
     document.getElementById('userInput').addEventListener('beforeinput', function(e) {
         if (!e.data) return;
 
