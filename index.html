@@ -755,26 +755,41 @@ for (let key in enToThMap) {
         }
     });
 
-    function playErrorSound() {
+   let errorAudioCtx = null;
+
+function initAudioContext() {
+    if (!errorAudioCtx) {
+        errorAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (errorAudioCtx.state === 'suspended') {
+        errorAudioCtx.resume();
+    }
+}
+
+function playErrorSound() {
     try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
+        initAudioContext();
+        const osc = errorAudioCtx.createOscillator();
+        const gain = errorAudioCtx.createGain();
+
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.15);
-        
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        
+        osc.frequency.setValueAtTime(200, errorAudioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, errorAudioCtx.currentTime + 0.12);
+
+        gain.gain.setValueAtTime(0.25, errorAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, errorAudioCtx.currentTime + 0.12);
+
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
+        gain.connect(errorAudioCtx.destination);
+
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.15);
+        osc.stop(errorAudioCtx.currentTime + 0.12);
     } catch(e) {}
 }
+
+// ปลุกระบบเสียงทันทีเมื่อผู้ใช้คลิกช่องพิมพ์
+document.getElementById('userInput').addEventListener('focus', initAudioContext);
+document.getElementById('userInput').addEventListener('keydown', initAudioContext);
     
 document.getElementById('userInput').addEventListener('input', function(e) {
     if (currentMode !== 'practice') return;
@@ -804,8 +819,8 @@ document.getElementById('userInput').addEventListener('input', function(e) {
     } else if (targetClean.startsWith(userClean)) {
         this.className = 'typing-input';
     } else {
-        // เล่นเสียงเตือนเมื่อกดพิมพ์ตัวอักษรผิด
-        if (this.className !== 'typing-input incorrect' || (e.inputType && e.inputType.includes('insert'))) {
+        // หากเป็นการพิมพ์เพิ่มตัวอักษรผิด (ไม่ใช่การกดลบ Backspace) ให้ส่งเสียงเตือนทุกครั้ง
+        if (!e.inputType || !e.inputType.startsWith('delete')) {
             playErrorSound();
         }
         this.className = 'typing-input incorrect';
