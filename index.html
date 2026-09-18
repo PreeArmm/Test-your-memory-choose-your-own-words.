@@ -755,51 +755,62 @@ for (let key in enToThMap) {
         }
     });
 
+    function playErrorSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.15);
+        
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    } catch(e) {}
+}
+    
 document.getElementById('userInput').addEventListener('input', function(e) {
-        if (currentMode !== 'practice') return;
-        const item = wordList[currentIndex];
-        const val = e.target.value;
+    if (currentMode !== 'practice') return;
+    const item = wordList[currentIndex];
+    const val = e.target.value;
 
-        if (practiceLang === 'en') {
-            const targetClean = cleanString(item.word);
-            const userClean = cleanString(val);
+    let targetClean = '';
+    if (practiceLang === 'en') {
+        targetClean = cleanString(item.word);
+    } else if (practiceLang === 'th') {
+        targetClean = cleanString(item.meaning);
+    } else if (practiceLang === 'both') {
+        targetClean = cleanString(item.word) + cleanString(item.meaning);
+    }
 
-            if (userClean === targetClean) {
-                this.className = 'typing-input correct';
-                speakWord(item.word, 'en', () => { currentIndex++; showPracticeOrFlashcardWord(); });
-            } else if (targetClean.startsWith(userClean)) {
-                this.className = 'typing-input';
-            } else {
-                this.className = 'typing-input incorrect';
-            }
-        } else if (practiceLang === 'th') {
-            const targetClean = cleanString(item.meaning);
-            const userClean = cleanString(val);
+    const userClean = cleanString(val);
 
-            if (userClean === targetClean) {
-                this.className = 'typing-input correct';
+    if (userClean === targetClean) {
+        this.className = 'typing-input correct';
+        if (practiceLang === 'both') {
+            speakWord(item.word, 'en', () => {
                 speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
-            } else if (targetClean.startsWith(userClean)) {
-                this.className = 'typing-input';
-            } else {
-                this.className = 'typing-input incorrect';
-            }
-        } else if (practiceLang === 'both') {
-            const targetClean = cleanString(item.word) + cleanString(item.meaning);
-            const userClean = cleanString(val);
-
-            if (userClean === targetClean) {
-                this.className = 'typing-input correct';
-                speakWord(item.word, 'en', () => {
-                    speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
-                });
-            } else if (targetClean.startsWith(userClean)) {
-                this.className = 'typing-input';
-            } else {
-                this.className = 'typing-input incorrect';
-            }
+            });
+        } else {
+            speakWord(practiceLang === 'en' ? item.word : item.meaning, practiceLang, () => { currentIndex++; showPracticeOrFlashcardWord(); });
         }
-    });
+    } else if (targetClean.startsWith(userClean)) {
+        this.className = 'typing-input';
+    } else {
+        // เล่นเสียงเตือนเมื่อกดพิมพ์ตัวอักษรผิด
+        if (this.className !== 'typing-input incorrect' || (e.inputType && e.inputType.includes('insert'))) {
+            playErrorSound();
+        }
+        this.className = 'typing-input incorrect';
+    }
+});
 
     document.getElementById('userInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && currentMode === 'flashcard') checkFlashcardAnswer();
