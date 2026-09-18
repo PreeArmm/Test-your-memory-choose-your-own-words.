@@ -481,7 +481,12 @@
         'Z':'(' , 'X':')', 'C':'ฉ', 'V':'ฮ', 'B':'ฺ', 'N':'์', 'M':'?'
     };
     const thToEnMap = {};
-    for (let key in enToThMap) { thToEnMap[enToThMap[key]] = key; }
+for (let key in enToThMap) {
+    const thaiChar = enToThMap[key];
+    if (!thToEnMap[thaiChar] || (key >= 'a' && key <= 'z')) {
+        thToEnMap[thaiChar] = key;
+    }
+}
 
     function convertChar(char, targetLang, targetExpectedStr = '', currentPos = 0) {
         if (/^[0-9\s.,\/#!$%\^&\*;:{}=\-_`~()]$/.test(char)) return char;
