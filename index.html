@@ -755,47 +755,45 @@ for (let key in enToThMap) {
         }
     });
 
-    document.getElementById('userInput').addEventListener('input', function(e) {
+document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
         const val = e.target.value;
 
         if (practiceLang === 'en') {
-            if (checkFlexibleAnswer(val, item.word)) {
+            const targetClean = cleanString(item.word);
+            const userClean = cleanString(val);
+
+            if (userClean === targetClean) {
                 this.className = 'typing-input correct';
                 speakWord(item.word, 'en', () => { currentIndex++; showPracticeOrFlashcardWord(); });
-            } else if (cleanString(item.word).startsWith(cleanString(val))) {
+            } else if (targetClean.startsWith(userClean)) {
                 this.className = 'typing-input';
             } else {
                 this.className = 'typing-input incorrect';
             }
         } else if (practiceLang === 'th') {
-            if (checkFlexibleAnswer(val, item.meaning)) {
+            const targetClean = cleanString(item.meaning);
+            const userClean = cleanString(val);
+
+            if (userClean === targetClean) {
                 this.className = 'typing-input correct';
                 speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
-            } else {
+            } else if (targetClean.startsWith(userClean)) {
                 this.className = 'typing-input';
+            } else {
+                this.className = 'typing-input incorrect';
             }
         } else if (practiceLang === 'both') {
-            const cleanVal = cleanString(val);
-            const cleanEn = cleanString(item.word);
-            const subMeanings = item.meaning.split(/[/,;]/).map(s => cleanString(s));
+            const targetClean = cleanString(item.word) + cleanString(item.meaning);
+            const userClean = cleanString(val);
 
-            if (cleanVal.startsWith(cleanEn)) {
-                const tailInput = cleanVal.slice(cleanEn.length);
-                if (tailInput === '') {
-                    this.className = 'typing-input';
-                } else if (subMeanings.some(m => m === tailInput)) {
-                    this.className = 'typing-input correct';
-                    speakWord(item.word, 'en', () => {
-                        speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
-                    });
-                } else if (subMeanings.some(m => m.startsWith(tailInput))) {
-                    this.className = 'typing-input';
-                } else {
-                    this.className = 'typing-input incorrect';
-                }
-            } else if (cleanEn.startsWith(cleanVal)) {
+            if (userClean === targetClean) {
+                this.className = 'typing-input correct';
+                speakWord(item.word, 'en', () => {
+                    speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
+                });
+            } else if (targetClean.startsWith(userClean)) {
                 this.className = 'typing-input';
             } else {
                 this.className = 'typing-input incorrect';
