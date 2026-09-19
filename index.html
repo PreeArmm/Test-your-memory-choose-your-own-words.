@@ -205,83 +205,25 @@
         .score-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         .score-item:last-child { border-bottom: none; }
 
-        /* ==========================================
-           RESPONSIVE DESIGN FOR PORTRAIT MOBILE (มือถือแนวตั้ง)
-           ========================================== */
+        /* RESPONSIVE DESIGN FOR PORTRAIT MOBILE */
         @media (max-width: 600px) {
-            body {
-                padding: 10px;
-                align-items: flex-start;
-            }
-
-            .container {
-                padding: 18px 14px;
-                border-radius: 18px;
-            }
-
+            body { padding: 10px; align-items: flex-start; }
+            .container { padding: 18px 14px; border-radius: 18px; }
             h1 { font-size: 22px; }
             p.subtitle { font-size: 13px; margin-bottom: 16px; }
-
-            .options-grid, .options-grid.three-cols {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-
-            .flashcard-display-container {
-                flex-direction: column;
-                padding: 16px 12px;
-                gap: 12px;
-            }
-
-            .fc-divider-line {
-                width: 100%;
-                height: 1px;
-            }
-
+            .options-grid, .options-grid.three-cols { grid-template-columns: 1fr; gap: 8px; }
+            .flashcard-display-container { flex-direction: column; padding: 16px 12px; gap: 12px; }
+            .fc-divider-line { width: 100%; height: 1px; }
             .word-display { font-size: 20px; text-align: center; }
             .meaning-display { font-size: 18px; text-align: center; }
-
-            input[type="text"].typing-input {
-                font-size: 16px;
-                padding: 10px;
-            }
-
-            .audio-controls {
-                flex-direction: column;
-                gap: 10px;
-                align-items: stretch;
-            }
-
-            .control-group {
-                justify-content: space-between;
-                width: 100%;
-            }
-
-            .control-group input[type="range"] {
-                width: 130px;
-            }
-
-            .listening-choices-grid, .speed-choices-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .matching-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-
-            .match-card {
-                padding: 10px 6px;
-                font-size: 13px;
-                min-height: 48px;
-            }
-
-            .speed-header {
-                padding: 10px 12px;
-                font-size: 13px;
-            }
-
+            input[type="text"].typing-input { font-size: 16px; padding: 10px; }
+            .audio-controls { flex-direction: column; gap: 10px; align-items: stretch; }
+            .control-group { justify-content: space-between; width: 100%; }
+            .control-group input[type="range"] { width: 130px; }
+            .listening-choices-grid, .speed-choices-grid { grid-template-columns: 1fr; gap: 10px; }
+            .matching-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .match-card { padding: 10px 6px; font-size: 13px; min-height: 48px; }
+            .speed-header { padding: 10px 12px; font-size: 13px; }
             .speed-timer { font-size: 16px; }
             .speed-score { font-size: 16px; }
             .speed-word-box { font-size: 20px; padding: 16px; }
@@ -471,6 +413,7 @@
     let isProcessingFc = false;
     let isProcessingListen = false;
     let correctCount = 0;
+    let wrongWords = [];
 
     const enToThMap = {
         'q':'ๆ', 'w':'ไ', 'e':'ำ', 'r':'พ', 't':'ะ', 'y':'ั', 'u':'ี', 'i':'ร', 'o':'น', 'p':'ย',
@@ -480,13 +423,15 @@
         'A':'ฤ', 'S':'ฆ', 'D':'ฏ', 'F':'โ', 'G':'ฌ', 'H':'็', 'J':'๋', 'K':'ษ', 'L':'ศ',
         'Z':'(' , 'X':')', 'C':'ฉ', 'V':'ฮ', 'B':'ฺ', 'N':'์', 'M':'?'
     };
+    
+    // แก้ไขระบบแปลงปุ่มภาษาไทยกลับเป็นภาษาอังกฤษแบบเลือกตัวพิมพ์เล็กเป็นหลัก
     const thToEnMap = {};
-for (let key in enToThMap) {
-    const thaiChar = enToThMap[key];
-    if (!thToEnMap[thaiChar] || (key >= 'a' && key <= 'z')) {
-        thToEnMap[thaiChar] = key;
+    for (let key in enToThMap) {
+        const thaiChar = enToThMap[key];
+        if (!thToEnMap[thaiChar] || (key >= 'a' && key <= 'z')) {
+            thToEnMap[thaiChar] = key;
+        }
     }
-}
 
     function convertChar(char, targetLang, targetExpectedStr = '', currentPos = 0) {
         if (/^[0-9\s.,\/#!$%\^&\*;:{}=\-_`~()]$/.test(char)) return char;
@@ -500,6 +445,42 @@ for (let key in enToThMap) {
         if (targetLang === 'en') return thToEnMap[char] || char;
         return char;
     }
+
+    // ระบบสร้างและเตรียมพร้อมเสียง Web Audio API
+    let errorAudioCtx = null;
+
+    function initAudioContext() {
+        if (!errorAudioCtx) {
+            errorAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (errorAudioCtx.state === 'suspended') {
+            errorAudioCtx.resume();
+        }
+    }
+
+    function playErrorSound() {
+        try {
+            initAudioContext();
+            const osc = errorAudioCtx.createOscillator();
+            const gain = errorAudioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, errorAudioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, errorAudioCtx.currentTime + 0.12);
+
+            gain.gain.setValueAtTime(0.25, errorAudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, errorAudioCtx.currentTime + 0.12);
+
+            osc.connect(gain);
+            gain.connect(errorAudioCtx.destination);
+
+            osc.start();
+            osc.stop(errorAudioCtx.currentTime + 0.12);
+        } catch(e) {}
+    }
+
+    document.getElementById('userInput').addEventListener('focus', initAudioContext);
+    document.getElementById('userInput').addEventListener('keydown', initAudioContext);
 
     let currentMatchSet = 0, totalMatchSets = 0;
     const SET_SIZE = 6;
@@ -635,6 +616,7 @@ for (let key in enToThMap) {
         if (isRandom) wordList = shuffleArray(wordList);
 
         correctCount = 0;
+        wrongWords = [];
         document.getElementById('setup-section').style.display = 'none';
 
         if (currentMode === 'matching') {
@@ -661,7 +643,20 @@ for (let key in enToThMap) {
             if (currentMode === 'flashcard') {
                 const pct = Math.round((correctCount / wordList.length) * 100);
                 saveScore('flashcard', pct);
-                alert(`🎉 ทำการทดสอบเรียบร้อย! คุณตอบถูกต้อง ${correctCount}/${wordList.length} คำ (${pct}%)`);
+
+                if (wrongWords.length > 0) {
+                    const retry = confirm(`🎉 ทำการทดสอบเรียบร้อย! คุณตอบถูกต้อง ${correctCount}/${wordList.length} คำ (${pct}%)\n\nคุณมีคำที่ตอบผิด ${wrongWords.length} คำ ต้องการพิมพ์ทบทวนเฉพาะคำที่ผิดอีกครั้งหรือไม่?`);
+                    if (retry) {
+                        wordList = [...wrongWords];
+                        wrongWords = [];
+                        currentIndex = 0;
+                        correctCount = 0;
+                        showPracticeOrFlashcardWord();
+                        return;
+                    }
+                } else {
+                    alert(`🎉 ยอดเยี่ยมมาก! คุณตอบถูกต้องครบทั้งหมด 100%`);
+                }
             } else {
                 alert('🎉 ฝึกพิมพ์ครบทุกคำเรียบร้อยแล้ว!');
             }
@@ -755,77 +750,41 @@ for (let key in enToThMap) {
         }
     });
 
-   let errorAudioCtx = null;
+    // ปรับปรุงการตรวจสอบโหมด Practice ให้ต้องพิมพ์ครบทุกตัวอักษร + ระบบเสียงเตือนทันที
+    document.getElementById('userInput').addEventListener('input', function(e) {
+        if (currentMode !== 'practice') return;
+        const item = wordList[currentIndex];
+        const val = e.target.value;
 
-function initAudioContext() {
-    if (!errorAudioCtx) {
-        errorAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (errorAudioCtx.state === 'suspended') {
-        errorAudioCtx.resume();
-    }
-}
+        let targetClean = '';
+        if (practiceLang === 'en') {
+            targetClean = cleanString(item.word);
+        } else if (practiceLang === 'th') {
+            targetClean = cleanString(item.meaning);
+        } else if (practiceLang === 'both') {
+            targetClean = cleanString(item.word) + cleanString(item.meaning);
+        }
 
-function playErrorSound() {
-    try {
-        initAudioContext();
-        const osc = errorAudioCtx.createOscillator();
-        const gain = errorAudioCtx.createGain();
+        const userClean = cleanString(val);
 
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(200, errorAudioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(80, errorAudioCtx.currentTime + 0.12);
-
-        gain.gain.setValueAtTime(0.25, errorAudioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, errorAudioCtx.currentTime + 0.12);
-
-        osc.connect(gain);
-        gain.connect(errorAudioCtx.destination);
-
-        osc.start();
-        osc.stop(errorAudioCtx.currentTime + 0.12);
-    } catch(e) {}
-}
-
-// ปลุกระบบเสียงทันทีเมื่อผู้ใช้คลิกช่องพิมพ์
-document.getElementById('userInput').addEventListener('focus', initAudioContext);
-document.getElementById('userInput').addEventListener('keydown', initAudioContext);
-    
-document.getElementById('userInput').addEventListener('input', function(e) {
-    if (currentMode !== 'practice') return;
-    const item = wordList[currentIndex];
-    const val = e.target.value;
-
-    let targetClean = '';
-    if (practiceLang === 'en') {
-        targetClean = cleanString(item.word);
-    } else if (practiceLang === 'th') {
-        targetClean = cleanString(item.meaning);
-    } else if (practiceLang === 'both') {
-        targetClean = cleanString(item.word) + cleanString(item.meaning);
-    }
-
-    const userClean = cleanString(val);
-
-    if (userClean === targetClean) {
-        this.className = 'typing-input correct';
-        if (practiceLang === 'both') {
-            speakWord(item.word, 'en', () => {
-                speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
-            });
+        if (userClean === targetClean) {
+            this.className = 'typing-input correct';
+            if (practiceLang === 'both') {
+                speakWord(item.word, 'en', () => {
+                    speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
+                });
+            } else {
+                speakWord(practiceLang === 'en' ? item.word : item.meaning, practiceLang, () => { currentIndex++; showPracticeOrFlashcardWord(); });
+            }
+        } else if (targetClean.startsWith(userClean)) {
+            this.className = 'typing-input';
         } else {
-            speakWord(practiceLang === 'en' ? item.word : item.meaning, practiceLang, () => { currentIndex++; showPracticeOrFlashcardWord(); });
+            if (!e.inputType || !e.inputType.startsWith('delete')) {
+                playErrorSound();
+            }
+            this.className = 'typing-input incorrect';
         }
-    } else if (targetClean.startsWith(userClean)) {
-        this.className = 'typing-input';
-    } else {
-        // หากเป็นการพิมพ์เพิ่มตัวอักษรผิด (ไม่ใช่การกดลบ Backspace) ให้ส่งเสียงเตือนทุกครั้ง
-        if (!e.inputType || !e.inputType.startsWith('delete')) {
-            playErrorSound();
-        }
-        this.className = 'typing-input incorrect';
-    }
-});
+    });
 
     document.getElementById('userInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && currentMode === 'flashcard') checkFlashcardAnswer();
@@ -857,6 +816,7 @@ document.getElementById('userInput').addEventListener('input', function(e) {
                 speakWord(item.meaning, 'th', () => { currentIndex++; showPracticeOrFlashcardWord(); });
             });
         } else {
+            wrongWords.push(item);
             inputField.className = 'typing-input incorrect';
             answerReveal.innerText = `✕ เฉลย: ${targetAnswer}`;
             answerReveal.className = 'answer-reveal-box show-incorrect';
