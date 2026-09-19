@@ -251,6 +251,7 @@
         <div class="options-grid">
             <label><input type="radio" name="appMode" value="practice" checked onclick="updateSubOptions('practice')"> ✍️ ฝึกพิมพ์ตาม (Typing)</label>
             <label><input type="radio" name="appMode" value="flashcard" onclick="updateSubOptions('flashcard')"> 🎴 แฟลชการ์ด (Flashcards)</label>
+            <label><input type="radio" name="appMode" value="quiz" onclick="updateSubOptions('quiz')"> 🎯 ปรนัย 4 ตัวเลือก (Quiz)</label>
             <label><input type="radio" name="appMode" value="listening" onclick="updateSubOptions('listening')"> 🎧 ฟังเสียงทายคำ (Listening)</label>
             <label><input type="radio" name="appMode" value="matching" onclick="updateSubOptions('matching')"> 🧩 เกมจับคู่ (Matching)</label>
             <label><input type="radio" name="appMode" value="speed" onclick="updateSubOptions('speed')"> ⚡ แข่งจับเวลา (Speed)</label>
@@ -270,6 +271,14 @@
             <div class="options-grid">
                 <label><input type="radio" name="fcDirection" value="en2th" checked> 🇬🇧 ซ่อนคำแปลไทย (ทายคำแปล)</label>
                 <label><input type="radio" name="fcDirection" value="th2en"> 🇹🇭 ซ่อนคำอังกฤษ (ทายศัพท์)</label>
+            </div>
+        </div>
+
+        <div id="quizOptions" style="display: none;">
+            <div class="section-title">รูปแบบโหมดปรนัย</div>
+            <div class="options-grid">
+                <label><input type="radio" name="quizDirection" value="en2th" checked> 🇬🇧 โจทย์อังกฤษ ➔ เลือกคำแปลไทย</label>
+                <label><input type="radio" name="quizDirection" value="th2en"> 🇹🇭 โจทย์ไทย ➔ เลือกคำอังกฤษ</label>
             </div>
         </div>
 
@@ -336,6 +345,19 @@
         <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
     </div>
 
+    <!-- โหมด Quiz 4 ตัวเลือก -->
+    <div id="quiz-section" class="view-section">
+        <h2>🎯 ปรนัย 4 ตัวเลือก</h2>
+        <div class="speed-word-box" id="quizTargetWord" style="margin-bottom: 10px;">---</div>
+        <button class="btn-speaker" style="width: 44px; height: 44px; font-size: 20px; margin-bottom: 15px;" onclick="playCurrentQuizAudio()" title="ฟังเสียงซ้ำ">🔊</button>
+
+        <div class="listening-choices-grid" id="quizChoicesGrid"></div>
+
+        <div class="progress-bar-container"><div class="progress-bar" id="progressBarQuiz"></div></div>
+        <div class="score-info" id="progressTextQuiz">คำที่ 0 / 0</div>
+        <button class="btn-secondary" onclick="resetApp()">กลับหน้าหลัก</button>
+    </div>
+
     <!-- โหมด Listening -->
     <div id="listening-section" class="view-section">
         <h2 id="listenTitle">🎧 ฟังเสียงแล้วเลือกคำตอบ</h2>
@@ -395,6 +417,7 @@
         </div>
         <ul class="score-list">
             <li class="score-item"><span>⚡ โหมดแข่งจับเวลา (Speed)</span><strong id="highScoreSpeed">0 คะแนน</strong></li>
+            <li class="score-item"><span>🎯 ปรนัย 4 ตัวเลือก (Quiz)</span><strong id="highScoreQuiz">0%</strong></li>
             <li class="score-item"><span>🎴 แฟลชการ์ด (Flashcards)</span><strong id="highScoreFlashcard">0%</strong></li>
             <li class="score-item"><span>🎧 ฟังเสียงทายคำ (Listening)</span><strong id="highScoreListening">0%</strong></li>
         </ul>
@@ -407,10 +430,12 @@
     let currentIndex = 0;
     let currentMode = 'practice';
     let fcDirection = 'en2th';
+    let quizDirection = 'en2th';
     let listenDirection = 'th2en';
     let practiceLang = 'en'; 
     let audioVoiceSetting = 'both';
     let isProcessingFc = false;
+    let isProcessingQuiz = false;
     let isProcessingListen = false;
     let correctCount = 0;
     let wrongWords = [];
@@ -424,7 +449,6 @@
         'Z':'(' , 'X':')', 'C':'ฉ', 'V':'ฮ', 'B':'ฺ', 'N':'์', 'M':'?'
     };
     
-    // แก้ไขระบบแปลงปุ่มภาษาไทยกลับเป็นภาษาอังกฤษแบบเลือกตัวพิมพ์เล็กเป็นหลัก
     const thToEnMap = {};
     for (let key in enToThMap) {
         const thaiChar = enToThMap[key];
@@ -446,7 +470,6 @@
         return char;
     }
 
-    // ระบบสร้างและเตรียมพร้อมเสียง Web Audio API
     let errorAudioCtx = null;
 
     function initAudioContext() {
@@ -534,6 +557,7 @@
     function updateSubOptions(mode) {
         document.getElementById('practiceOptions').style.display = (mode === 'practice') ? 'block' : 'none';
         document.getElementById('flashcardOptions').style.display = (mode === 'flashcard') ? 'block' : 'none';
+        document.getElementById('quizOptions').style.display = (mode === 'quiz') ? 'block' : 'none';
         document.getElementById('listeningOptions').style.display = (mode === 'listening') ? 'block' : 'none';
     }
 
@@ -602,13 +626,14 @@
 
         currentMode = document.querySelector('input[name="appMode"]:checked').value;
 
-        if (currentMode === 'speed' && wordList.length < 4) {
-            alert('โหมดแข่งจับเวลาจำเป็นต้องมีคำศัพท์อย่างน้อย 4 คำขึ้นไป');
+        if ((currentMode === 'speed' || currentMode === 'quiz') && wordList.length < 4) {
+            alert('โหมดนี้จำเป็นต้องมีคำศัพท์อย่างน้อย 4 คำขึ้นไป');
             return;
         }
 
         practiceLang = document.querySelector('input[name="practiceLang"]:checked').value;
         fcDirection = document.querySelector('input[name="fcDirection"]:checked').value;
+        quizDirection = document.querySelector('input[name="quizDirection"]:checked').value;
         listenDirection = document.querySelector('input[name="listenDirection"]:checked').value;
         audioVoiceSetting = document.querySelector('input[name="audioVoiceSetting"]:checked').value;
         const isRandom = document.querySelector('input[name="wordOrder"]:checked').value === 'random';
@@ -627,6 +652,10 @@
         } else if (currentMode === 'speed') {
             document.getElementById('speed-section').style.display = 'block';
             startSpeedGame();
+        } else if (currentMode === 'quiz') {
+            document.getElementById('quiz-section').style.display = 'block';
+            currentIndex = 0;
+            showQuizQuestion();
         } else if (currentMode === 'listening') {
             document.getElementById('listening-section').style.display = 'block';
             currentIndex = 0;
@@ -750,7 +779,6 @@
         }
     });
 
-    // ปรับปรุงการตรวจสอบโหมด Practice ให้ต้องพิมพ์ครบทุกตัวอักษร + ระบบเสียงเตือนทันที
     document.getElementById('userInput').addEventListener('input', function(e) {
         if (currentMode !== 'practice') return;
         const item = wordList[currentIndex];
@@ -824,6 +852,87 @@
         }
     }
 
+    // ฟังก์ชันสำหรับโหมด Quiz 4 ตัวเลือก
+    function showQuizQuestion() {
+        if (currentIndex >= wordList.length) {
+            const pct = Math.round((correctCount / wordList.length) * 100);
+            saveScore('quiz', pct);
+            alert(`🎉 ทำแบบทดสอบปรนัยเสร็จสมบูรณ์! คุณได้ ${correctCount}/${wordList.length} คำ (${pct}%)`);
+            resetApp();
+            return;
+        }
+
+        isProcessingQuiz = false;
+        const item = wordList[currentIndex];
+        const grid = document.getElementById('quizChoicesGrid');
+        grid.innerHTML = '';
+
+        const progressPercent = (currentIndex / wordList.length) * 100;
+        document.getElementById('progressBarQuiz').style.width = progressPercent + '%';
+        document.getElementById('progressTextQuiz').innerText = `คำที่ ${currentIndex + 1} / ${wordList.length}`;
+
+        const isEn = (quizDirection === 'en2th');
+        document.getElementById('quizTargetWord').innerText = isEn ? item.word : item.meaning;
+
+        if (isEn) speakWord(item.word, 'en');
+        else speakWord(item.meaning, 'th');
+
+        const correctChoice = isEn ? item.meaning : item.word;
+        let otherItems = wordList.filter((_, idx) => idx !== currentIndex);
+        otherItems = shuffleArray(otherItems);
+
+        let choices = [correctChoice];
+        for (let i = 0; i < Math.min(3, otherItems.length); i++) {
+            choices.push(isEn ? otherItems[i].meaning : otherItems[i].word);
+        }
+        choices = shuffleArray(choices);
+
+        choices.forEach(choiceText => {
+            const btn = document.createElement('button');
+            btn.className = 'listen-choice-btn';
+            btn.innerText = choiceText;
+            btn.onclick = () => selectQuizChoice(btn, choiceText, item);
+            grid.appendChild(btn);
+        });
+    }
+
+    function playCurrentQuizAudio() {
+        if (wordList.length === 0 || currentIndex >= wordList.length) return;
+        const item = wordList[currentIndex];
+        if (quizDirection === 'en2th') speakWord(item.word, 'en', null, true);
+        else speakWord(item.meaning, 'th', null, true);
+    }
+
+    function selectQuizChoice(selectedBtn, selectedText, item) {
+        if (isProcessingQuiz) return;
+        isProcessingQuiz = true;
+
+        let isEn = (quizDirection === 'en2th');
+        let targetCorrectText = isEn ? item.meaning : item.word;
+        let isCorrect = (selectedText === targetCorrectText);
+
+        if (isCorrect) {
+            correctCount++;
+            selectedBtn.classList.add('correct-choice');
+            if (isEn) {
+                speakWord(item.word, 'en', () => {
+                    speakWord(item.meaning, 'th', () => { currentIndex++; showQuizQuestion(); });
+                });
+            } else {
+                speakWord(item.meaning, 'th', () => {
+                    speakWord(item.word, 'en', () => { currentIndex++; showQuizQuestion(); });
+                });
+            }
+        } else {
+            playErrorSound();
+            selectedBtn.classList.add('incorrect-choice');
+            document.querySelectorAll('#quizChoicesGrid .listen-choice-btn').forEach(b => {
+                if (b.innerText === targetCorrectText) b.classList.add('correct-choice');
+            });
+            setTimeout(() => { currentIndex++; showQuizQuestion(); }, 2000);
+        }
+    }
+
     function showListeningQuestion() {
         if (currentIndex >= wordList.length) {
             const pct = Math.round((correctCount / wordList.length) * 100);
@@ -884,8 +993,9 @@
                 speakWord(item.meaning, 'th', () => { currentIndex++; showListeningQuestion(); });
             });
         } else {
+            playErrorSound();
             selectedBtn.classList.add('incorrect-choice');
-            document.querySelectorAll('.listen-choice-btn').forEach(b => {
+            document.querySelectorAll('#listeningChoicesGrid .listen-choice-btn').forEach(b => {
                 if (b.innerText === targetCorrectText) b.classList.add('correct-choice');
             });
             setTimeout(() => { currentIndex++; showListeningQuestion(); }, 2000);
@@ -1019,6 +1129,7 @@
             const bonusScore = Math.min(speedCombo * 20, 100);
             speedScore += (100 + bonusScore);
         } else {
+            playErrorSound();
             btn.classList.add('incorrect-btn');
             speedCombo = 0;
             speedScore = Math.max(0, speedScore - 50);
@@ -1086,6 +1197,7 @@
 
     function openScoreModal() {
         document.getElementById('highScoreSpeed').innerText = (localStorage.getItem('vocab_score_speed') || '0') + ' คะแนน';
+        document.getElementById('highScoreQuiz').innerText = (localStorage.getItem('vocab_score_quiz') || '0') + '%';
         document.getElementById('highScoreFlashcard').innerText = (localStorage.getItem('vocab_score_flashcard') || '0') + '%';
         document.getElementById('highScoreListening').innerText = (localStorage.getItem('vocab_score_listening') || '0') + '%';
         document.getElementById('scoreModal').style.display = 'flex';
@@ -1094,6 +1206,7 @@
     function closeScoreModal() { document.getElementById('scoreModal').style.display = 'none'; }
     function clearScoreHistory() {
         localStorage.removeItem('vocab_score_speed');
+        localStorage.removeItem('vocab_score_quiz');
         localStorage.removeItem('vocab_score_flashcard');
         localStorage.removeItem('vocab_score_listening');
         openScoreModal();
@@ -1104,6 +1217,7 @@
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         document.getElementById('setup-section').style.display = 'block';
         document.getElementById('practice-section').style.display = 'none';
+        document.getElementById('quiz-section').style.display = 'none';
         document.getElementById('listening-section').style.display = 'none';
         document.getElementById('matching-section').style.display = 'none';
         document.getElementById('speed-section').style.display = 'none';
