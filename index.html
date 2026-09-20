@@ -205,7 +205,6 @@
         .score-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         .score-item:last-child { border-bottom: none; }
 
-        /* RESPONSIVE DESIGN FOR PORTRAIT MOBILE */
         @media (max-width: 600px) {
             body { padding: 10px; align-items: flex-start; }
             .container { padding: 18px 14px; border-radius: 18px; }
@@ -440,6 +439,13 @@
     let correctCount = 0;
     let wrongWords = [];
 
+    // Timeout & Interval references for smooth reset
+    let speedTimerInterval = null;
+    let speedNextTimeout = null;
+    let quizNextTimeout = null;
+    let fcNextTimeout = null;
+    let listenNextTimeout = null;
+
     const enToThMap = {
         'q':'ๆ', 'w':'ไ', 'e':'ำ', 'r':'พ', 't':'ะ', 'y':'ั', 'u':'ี', 'i':'ร', 'o':'น', 'p':'ย',
         'a':'ฟ', 's':'ห', 'd':'ก', 'f':'ด', 'g':'เ', 'h':'้', 'j':'่', 'k':'า', 'l':'ส',
@@ -481,6 +487,9 @@
         }
     }
 
+    // ปลดล็อก AudioContext เมื่อมีการคลิกส่วนใดๆ บนหน้าจอ
+    document.addEventListener('click', initAudioContext, { once: false });
+
     function playErrorSound() {
         try {
             initAudioContext();
@@ -502,14 +511,11 @@
         } catch(e) {}
     }
 
-    document.getElementById('userInput').addEventListener('focus', initAudioContext);
-    document.getElementById('userInput').addEventListener('keydown', initAudioContext);
-
     let currentMatchSet = 0, totalMatchSets = 0;
     const SET_SIZE = 6;
     let selectedCards = [], matchedPairsCount = 0;
 
-    let speedTimerInterval = null, speedTimeLeft = 60, speedScore = 0, speedCombo = 0, speedCurrentTarget = null, isSpeedLock = false;
+    let speedTimeLeft = 60, speedScore = 0, speedCombo = 0, speedCurrentTarget = null, isSpeedLock = false;
 
     const dropArea = document.getElementById('dropArea');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, preventDefaults, false));
@@ -616,6 +622,7 @@
     }
 
     function startApp() {
+        initAudioContext();
         const rawText = document.getElementById('wordInput').value;
         wordList = parseRawText(rawText);
 
@@ -626,7 +633,8 @@
 
         currentMode = document.querySelector('input[name="appMode"]:checked').value;
 
-        if ((currentMode === 'speed' || currentMode === 'quiz') && wordList.length < 4) {
+        // เช็กคำศัพท์ขั้นต่ำ 4 คำ สำหรับโหมดตัวเลือก
+        if ((currentMode === 'speed' || currentMode === 'quiz' || currentMode === 'listening') && wordList.length < 4) {
             alert('โหมดนี้จำเป็นต้องมีคำศัพท์อย่างน้อย 4 คำขึ้นไป');
             return;
         }
@@ -669,27 +677,33 @@
 
     function showPracticeOrFlashcardWord() {
         if (currentIndex >= wordList.length) {
+            document.getElementById('progressBar').style.width = '100%';
             if (currentMode === 'flashcard') {
                 const pct = Math.round((correctCount / wordList.length) * 100);
                 saveScore('flashcard', pct);
 
-                if (wrongWords.length > 0) {
-                    const retry = confirm(`🎉 ทำการทดสอบเรียบร้อย! คุณตอบถูกต้อง ${correctCount}/${wordList.length} คำ (${pct}%)\n\nคุณมีคำที่ตอบผิด ${wrongWords.length} คำ ต้องการพิมพ์ทบทวนเฉพาะคำที่ผิดอีกครั้งหรือไม่?`);
-                    if (retry) {
-                        wordList = [...wrongWords];
-                        wrongWords = [];
-                        currentIndex = 0;
-                        correctCount = 0;
-                        showPracticeOrFlashcardWord();
-                        return;
+                setTimeout(() => {
+                    if (wrongWords.length > 0) {
+                        const retry = confirm(`🎉 ทำการทดสอบเรียบร้อย! คุณตอบถูกต้อง ${correctCount}/${wordList.length} คำ (${pct}%)\n\nคุณมีคำที่ตอบผิด ${wrongWords.length} คำ ต้องการพิมพ์ทบทวนเฉพาะคำที่ผิดอีกครั้งหรือไม่?`);
+                        if (retry) {
+                            wordList = [...wrongWords];
+                            wrongWords = [];
+                            currentIndex = 0;
+                            correctCount = 0;
+                            showPracticeOrFlashcardWord();
+                            return;
+                        }
+                    } else {
+                        alert(`🎉 ยอดเยี่ยมมาก! คุณตอบถูกต้องครบทั้งหมด 100%`);
                     }
-                } else {
-                    alert(`🎉 ยอดเยี่ยมมาก! คุณตอบถูกต้องครบทั้งหมด 100%`);
-                }
+                    resetApp();
+                }, 100);
             } else {
-                alert('🎉 ฝึกพิมพ์ครบทุกคำเรียบร้อยแล้ว!');
+                setTimeout(() => {
+                    alert('🎉 ฝึกพิมพ์ครบทุกคำเรียบร้อยแล้ว!');
+                    resetApp();
+                }, 100);
             }
-            resetApp();
             return;
         }
 
@@ -848,17 +862,20 @@
             inputField.className = 'typing-input incorrect';
             answerReveal.innerText = `✕ เฉลย: ${targetAnswer}`;
             answerReveal.className = 'answer-reveal-box show-incorrect';
-            setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 2200);
+            fcNextTimeout = setTimeout(() => { currentIndex++; showPracticeOrFlashcardWord(); }, 2200);
         }
     }
 
-    // ฟังก์ชันสำหรับโหมด Quiz 4 ตัวเลือก
+    // โหมด Quiz 4 ตัวเลือก (ป้องกันคำตอบซ้ำ)
     function showQuizQuestion() {
         if (currentIndex >= wordList.length) {
+            document.getElementById('progressBarQuiz').style.width = '100%';
             const pct = Math.round((correctCount / wordList.length) * 100);
             saveScore('quiz', pct);
-            alert(`🎉 ทำแบบทดสอบปรนัยเสร็จสมบูรณ์! คุณได้ ${correctCount}/${wordList.length} คำ (${pct}%)`);
-            resetApp();
+            setTimeout(() => {
+                alert(`🎉 ทำแบบทดสอบปรนัยเสร็จสมบูรณ์! คุณได้ ${correctCount}/${wordList.length} คำ (${pct}%)`);
+                resetApp();
+            }, 100);
             return;
         }
 
@@ -878,14 +895,14 @@
         else speakWord(item.meaning, 'th');
 
         const correctChoice = isEn ? item.meaning : item.word;
-        let otherItems = wordList.filter((_, idx) => idx !== currentIndex);
+        let otherItems = wordList.filter(w => (isEn ? w.meaning : w.word) !== correctChoice);
         otherItems = shuffleArray(otherItems);
 
-        let choices = [correctChoice];
-        for (let i = 0; i < Math.min(3, otherItems.length); i++) {
-            choices.push(isEn ? otherItems[i].meaning : otherItems[i].word);
+        let choiceSet = new Set([correctChoice]);
+        for (let i = 0; i < otherItems.length && choiceSet.size < 4; i++) {
+            choiceSet.add(isEn ? otherItems[i].meaning : otherItems[i].word);
         }
-        choices = shuffleArray(choices);
+        let choices = shuffleArray(Array.from(choiceSet));
 
         choices.forEach(choiceText => {
             const btn = document.createElement('button');
@@ -929,16 +946,20 @@
             document.querySelectorAll('#quizChoicesGrid .listen-choice-btn').forEach(b => {
                 if (b.innerText === targetCorrectText) b.classList.add('correct-choice');
             });
-            setTimeout(() => { currentIndex++; showQuizQuestion(); }, 2000);
+            quizNextTimeout = setTimeout(() => { currentIndex++; showQuizQuestion(); }, 2000);
         }
     }
 
+    // โหมด Listening (ป้องกันคำตอบซ้ำ)
     function showListeningQuestion() {
         if (currentIndex >= wordList.length) {
+            document.getElementById('progressBarListen').style.width = '100%';
             const pct = Math.round((correctCount / wordList.length) * 100);
             saveScore('listening', pct);
-            alert(`🎉 ทดสอบฟังเสียงเสร็จสมบูรณ์! คุณได้ ${correctCount}/${wordList.length} คำ (${pct}%)`);
-            resetApp();
+            setTimeout(() => {
+                alert(`🎉 ทดสอบฟังเสียงเสร็จสมบูรณ์! คุณได้ ${correctCount}/${wordList.length} คำ (${pct}%)`);
+                resetApp();
+            }, 100);
             return;
         }
 
@@ -952,14 +973,14 @@
         document.getElementById('progressTextListen').innerText = `คำที่ ${currentIndex + 1} / ${wordList.length}`;
 
         const correctTarget = (listenDirection === 'th2en') ? item.word : item.meaning;
-        let otherItems = wordList.filter((_, idx) => idx !== currentIndex);
+        let otherItems = wordList.filter(w => ((listenDirection === 'th2en') ? w.word : w.meaning) !== correctTarget);
         otherItems = shuffleArray(otherItems);
 
-        let choices = [correctTarget];
-        for (let i = 0; i < Math.min(3, otherItems.length); i++) {
-            choices.push((listenDirection === 'th2en') ? otherItems[i].word : otherItems[i].meaning);
+        let choiceSet = new Set([correctTarget]);
+        for (let i = 0; i < otherItems.length && choiceSet.size < 4; i++) {
+            choiceSet.add((listenDirection === 'th2en') ? otherItems[i].word : otherItems[i].meaning);
         }
-        choices = shuffleArray(choices);
+        let choices = shuffleArray(Array.from(choiceSet));
 
         choices.forEach(choiceText => {
             const btn = document.createElement('button');
@@ -998,7 +1019,7 @@
             document.querySelectorAll('#listeningChoicesGrid .listen-choice-btn').forEach(b => {
                 if (b.innerText === targetCorrectText) b.classList.add('correct-choice');
             });
-            setTimeout(() => { currentIndex++; showListeningQuestion(); }, 2000);
+            listenNextTimeout = setTimeout(() => { currentIndex++; showListeningQuestion(); }, 2000);
         }
     }
 
@@ -1095,14 +1116,14 @@
 
         document.getElementById('speedTargetWord').innerText = speedCurrentTarget.word;
 
-        let choices = [speedCurrentTarget.meaning];
-        let availableOtherWords = wordList.filter(w => w.word !== speedCurrentTarget.word);
+        let availableOtherWords = wordList.filter(w => w.meaning !== speedCurrentTarget.meaning);
         availableOtherWords = shuffleArray(availableOtherWords);
 
-        for (let i = 0; i < Math.min(3, availableOtherWords.length); i++) {
-            choices.push(availableOtherWords[i].meaning);
+        let choiceSet = new Set([speedCurrentTarget.meaning]);
+        for (let i = 0; i < availableOtherWords.length && choiceSet.size < 4; i++) {
+            choiceSet.add(availableOtherWords[i].meaning);
         }
-        choices = shuffleArray(choices);
+        let choices = shuffleArray(Array.from(choiceSet));
 
         const grid = document.getElementById('speedChoicesGrid');
         grid.innerHTML = '';
@@ -1140,7 +1161,7 @@
 
         document.getElementById('speedScore').innerText = `คะแนน: ${speedScore}`;
         document.getElementById('speedCombo').innerText = `Combo x${speedCombo}`;
-        setTimeout(() => { nextSpeedQuestion(); }, isCorrect ? 400 : 1000);
+        speedNextTimeout = setTimeout(() => { nextSpeedQuestion(); }, isCorrect ? 400 : 1000);
     }
 
     function updateAudioSettings(modeContext) {
@@ -1214,6 +1235,11 @@
 
     function resetApp() {
         if (speedTimerInterval) clearInterval(speedTimerInterval);
+        if (speedNextTimeout) clearTimeout(speedNextTimeout);
+        if (quizNextTimeout) clearTimeout(quizNextTimeout);
+        if (fcNextTimeout) clearTimeout(fcNextTimeout);
+        if (listenNextTimeout) clearTimeout(listenNextTimeout);
+
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         document.getElementById('setup-section').style.display = 'block';
         document.getElementById('practice-section').style.display = 'none';
